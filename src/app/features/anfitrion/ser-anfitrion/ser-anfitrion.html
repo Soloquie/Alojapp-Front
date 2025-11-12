@@ -1,0 +1,85 @@
+<header class="bg-primary shadow-md">
+  <div class="max-w-6xl mx-auto px-4 h-20 flex items-center justify-between">
+    <a class="text-2xl font-bold text-white">ALOJAPP</a>
+    <nav class="hidden md:flex items-center gap-6">
+      <a routerLink="/explorar" class="text-white/90 hover:text-white">Explorar</a>
+      <a routerLink="/ser-anfitrion" class="underline text-white font-medium">Ser anfitrión</a>
+      <a routerLink="/perfil" class="text-white/90 hover:text-white">Perfil</a>
+      <a routerLink="/auth/login" class="bg-white/20 hover:bg-white/30 text-white py-2 px-4 rounded-lg">Login</a>
+    </nav>
+  </div>
+</header>
+
+<main class="max-w-2xl mx-auto px-4 py-10">
+  <div class="bg-white shadow border rounded-xl p-6 space-y-6">
+    <div class="text-center">
+      <h1 class="text-3xl font-bold text-primary">¡Únete como anfitrión!</h1>
+      <p class="text-slate-500">Comparte tu espacio y empieza a ganar dinero.</p>
+    </div>
+
+    <!-- IMPORTANTE: la redirección ocurre en submit() del TS -->
+    <form (ngSubmit)="submit()" [formGroup]="form" class="space-y-6" autocomplete="off">
+      <!-- Documentos "simulados" → links locales -->
+      <div>
+        <label class="block text-sm font-medium mb-2">Documentos legales</label>
+        <div class="mt-2 flex justify-center rounded-lg border border-dashed px-6 py-10">
+          <div class="text-center">
+            <span class="material-symbols-outlined text-5xl text-gray-300">upload_file</span>
+            <div class="mt-4 flex text-sm text-gray-600 items-center justify-center gap-2">
+              <label class="relative cursor-pointer rounded-md font-semibold text-primary hover:opacity-80">
+                <span>Seleccionar archivos</span>
+                <input type="file" (change)="onFilesSelected($event)" class="sr-only" multiple>
+              </label>
+              <span class="text-gray-400">o arrastra y suelta</span>
+            </div>
+            <p class="text-xs text-gray-500">PNG, JPG, PDF (no se suben; se muestran como enlaces)</p>
+          </div>
+        </div>
+
+        <!-- Lista de links generados (Object URLs) -->
+        <ul *ngIf="docLinks.length" class="mt-3 space-y-1">
+          <li *ngFor="let u of docLinks; index as i">
+            <a [href]="u" target="_blank" rel="noopener" class="text-primary underline">
+              Documento {{ i + 1 }}
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-2">Descripción personal</label>
+        <textarea formControlName="descripcionPersonal"
+                  rows="6"
+                  maxlength="1000"
+                  class="w-full rounded-lg border p-3"
+                  placeholder="Preséntate y describe tu experiencia como anfitrión."></textarea>
+        <div class="text-xs text-red-600 mt-1"
+             *ngIf="form.controls.descripcionPersonal.touched && form.controls.descripcionPersonal.invalid">
+          La descripción es obligatoria (máx. 1000 caracteres).
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium mb-2">Fecha de registro</label>
+          <input type="date" formControlName="fechaRegistro" class="w-full rounded-lg border p-2">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-2">URL a enviar (opcional)</label>
+          <input type="url" formControlName="documentosLegalesUrl" placeholder="https://ejemplo.com/mi-doc.pdf"
+                 class="w-full rounded-lg border p-2">
+          <p class="text-xs text-slate-500 mt-1">Si seleccionas archivos arriba, tomamos el primer enlace generado.</p>
+        </div>
+      </div>
+
+      <button type="submit"
+              [disabled]="cargando"
+              class="w-full bg-primary text-white font-semibold py-3 rounded-lg hover:opacity-90">
+        {{ cargando ? 'Enviando…' : 'Enviar solicitud' }}
+      </button>
+
+      <p *ngIf="error" class="text-red-600 text-sm">{{ error }}</p>
+      <p *ngIf="okMsg" class="text-emerald-600 text-sm">{{ okMsg }}</p>
+    </form>
+  </div>
+</main>

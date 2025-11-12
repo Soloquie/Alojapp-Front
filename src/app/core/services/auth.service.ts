@@ -14,30 +14,22 @@ export class AuthService {
   private readonly AUTH_BASE = `${this.base}/auth`;
   private readonly tokenKey = 'alj_token';
 
-  // emite true/false cuando inicia/cierra sesión
   private _loggedIn = new BehaviorSubject<boolean>(!!localStorage.getItem(this.tokenKey));
   loggedIn$ = this._loggedIn.asObservable();
 
-  /** Devuelve el token si existe */
   get token(): string | null {
     return localStorage.getItem(this.tokenKey);
   }
 
-  /** Sincrónico (útil para guards) */
   isLoggedIn(): boolean {
     return !!this.token;
   }
 
-  /** Login: guarda el token y emite loggedIn */
   login(dto: { email: string; password: string }): Observable<void> {
-    // Observa respuesta completa para soportar token en body o en header
     return this.http.post(`${this.base}/auth/login`, dto, { observe: 'response' })
       .pipe(
         map((res: HttpResponse<any>) => {
-          // 1) Body: { token: '...' }
           let token = (res.body as any)?.token;
-
-          // 2) Alternativa: header Authorization: Bearer xxx
           if (!token) {
             const authHeader = res.headers.get('Authorization') || res.headers.get('authorization');
             token = authHeader?.replace(/^Bearer\s+/i, '');
