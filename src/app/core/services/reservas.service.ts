@@ -1,10 +1,24 @@
-// src/app/core/services/reservas.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environments';
 import { Observable, map } from 'rxjs';
 import { Reserva } from '../models/reserva.models';
 
+export interface CrearReservaPayload {
+  alojamientoId: number;
+  fechaInicio: string;   // yyyy-MM-dd
+  fechaFin: string;      // yyyy-MM-dd
+  huespedes?: number;
+  precioNoche?: number;
+  noches: number;
+  total: number;
+}
+
+export interface ReservaResponse {
+  id: number;
+  estado?: string;
+  total?: number;
+}
 @Injectable({ providedIn: 'root' })
 export class ReservasService {
   private base = environment.apiUrl;
@@ -28,4 +42,8 @@ export class ReservasService {
       r.alojamiento?.imagenes?.[0]?.url ??
       null
   });
+
+    crearReserva(body: CrearReservaPayload): Observable<ReservaResponse> {
+      return this.http.post<ReservaResponse>(`${this.base}/reservas`, body);
+    }
 }

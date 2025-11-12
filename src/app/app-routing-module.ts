@@ -12,9 +12,9 @@ const routes: Routes = [
       import('./features/profile/profile-module').then(m => m.ProfileModule) },
   { path: 'buscar', loadChildren: () =>
   import('./features/search/search-module').then(m => m.SearchModule) },
-  { path: 'alojamiento', loadChildren: () =>
+  { path: 'alojamientos', loadChildren: () =>
     import('./features/alojamiento/alojamiento-module').then(m => m.AlojamientoModule) },
-      { path: 'alojamientos/:id', loadChildren: () => import('./features/alojamiento/alojamiento-module').then(m => m.AlojamientoModule) },
+  { path: 'alojamientos/:id', loadChildren: () => import('./features/alojamiento/alojamiento-module').then(m => m.AlojamientoModule) },
   { path: '**', redirectTo: 'home' }
 ];
 

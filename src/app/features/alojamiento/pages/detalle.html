@@ -1,177 +1,182 @@
-<div class="max-w-4xl mx-auto bg-white dark:bg-surface-dark">
-  <!-- HEADER -->
-  <header class="sticky top-0 z-10 flex items-center justify-center p-4 bg-white dark:bg-surface-dark border-b border-gray-200">
-    <button class="absolute left-4 text-slate-800 dark:text-slate-100" (click)="back()">
-      <span class="material-icons-outlined">arrow_back</span>
-    </button>
-    <h1 class="text-lg font-bold text-slate-800 dark:text-slate-100">Detalles de Alojamiento</h1>
-  </header>
+<header class="sticky top-0 z-10 flex items-center justify-center p-4 bg-white border-b">
+  <button class="absolute left-4 text-slate-700" (click)="back()">
+    <span class="material-symbols-outlined">arrow_back</span>
+  </button>
+  <h1 class="text-lg font-bold text-slate-800">Detalles de Alojamiento</h1>
+</header>
 
-  <!-- MAIN -->
-  <main>
-    <img
-      class="w-full h-64 object-cover"
-      alt="Interior luminoso de un apartamento moderno con cama y ventanas grandes"
-      src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKUp6lFwOK63_wQgPFcK9bpb2qaQ64mFN-gJ6sG3E0S7hgZLN9H2NXTehlgC1DK-l5ALk0wc0vkPRmNcowKdBGjFXxeuDzE6obWUvUKRgeDCMN_wyWUkgWy17E6EbbMq9LxdPg3SA1lgx_O6ONCZt05E2zIK0tYBlVt2eqkFGmKxW-KDvFSayJAGEtHqpGZ_QAoNYb0LutLMwtcn5kNo75_2xfYG26RAr39-XivG7exnMkXqP5GbRTIIMPoUdxim_ftNBSMojZuSc"/>
+<main *ngIf="!cargando && aloj as a; else cargandoTpl" class="max-w-5xl mx-auto">
+  <!-- HERO -->
+  <img
+    class="w-full h-64 object-cover"
+    [src]="a.portadaUrl || a.imagenPrincipalUrl || a.imagenes?.[0] || 'assets/placeholder.jpg'"
+    alt="Portada del alojamiento"
+  />
 
-    <div class="p-6 space-y-6">
-      <!-- Título + ubicación + rating -->
-      <section class="space-y-2">
-        <h2 class="text-3xl font-bold text-slate-800 dark:text-slate-100">Apartamento en las afueras</h2>
-        <div class="flex items-center space-x-2 text-slate-500 dark:text-slate-400">
-          <span class="material-icons-outlined text-lg">location_on</span>
-          <span>Distrito central, Barcelona</span>
-        </div>
-        <div class="flex items-center space-x-2 text-slate-500 dark:text-slate-400">
-          <span class="material-icons-outlined text-lg text-yellow-500">star</span>
-          <span class="font-semibold text-slate-800 dark:text-slate-100">4.8</span>
-          <span>(120 reseñas)</span>
-        </div>
-      </section>
+  <div class="p-6 space-y-6">
+    <!-- Título + ubicación + rating -->
+    <section class="space-y-2">
+      <h2 class="text-3xl font-bold text-slate-900">{{ a.titulo }}</h2>
 
-      <!-- Host -->
-      <section class="p-4 border border-gray-200 rounded-lg">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-4">
-            <img
-              class="w-14 h-14 rounded-full object-cover"
-              alt="Foto de perfil del anfitrión, Miguel Rodríguez"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuDf40G9nQIcUiuzzFrgoxTi4llYSYHwJx9lAgwkUjYzLXPA_T3GbhlDAFxD9GF-GBZU4wRRuwGOsERPdnMarG_V02cc_RcbB_1OPR3_uUdSUWE9kHFaZPlNO-1GK5pSCFtqP3CraSZmWUw_olXWGtp1KUfIiC-SbitDAyEAAx7honTLz4r3UplE7nZgHDAFxpMXxvIciDJJ8Ufo10uXcYxiCajz_YDboePigah3KCTq7JBQw40NyndJlRTfgwhUBCQwEC_t-qaqzoY"/>
-            <div>
-              <p class="font-bold text-slate-800 dark:text-slate-100">Miguel Rodríguez</p>
-              <div class="flex items-center space-x-2 mt-1">
-                <span class="text-xs font-semibold bg-emerald-600/10 text-emerald-700 px-2 py-1 rounded-full">Anfitrión</span>
-                <span class="text-xs text-slate-500 dark:text-slate-400">Rápida respuesta</span>
-              </div>
-            </div>
-          </div>
-          <span class="material-icons-outlined text-slate-400">chevron_right</span>
-        </div>
-      </section>
+      <div class="flex items-center gap-2 text-slate-600">
+        <span class="material-symbols-outlined text-lg">location_on</span>
+        <span>{{ a.ciudad || '—' }}<ng-container *ngIf="a.pais">, {{ a.pais }}</ng-container></span>
+      </div>
 
-      <!-- Servicios -->
-      <section class="p-4 border border-gray-200 rounded-lg">
-        <h3 class="text-xl font-bold mb-4 text-slate-800 dark:text-slate-100">Servicios &amp; Políticas</h3>
-        <div class="grid grid-cols-2 gap-4">
-          <div class="flex items-center space-x-3 text-slate-800 dark:text-slate-100">
-            <span class="material-icons-outlined text-emerald-700">kitchen</span><span>Cocina completa</span>
-          </div>
-          <div class="flex items-center space-x-3 text-slate-800 dark:text-slate-100">
-            <span class="material-icons-outlined text-emerald-700">wifi</span><span>Wi-Fi</span>
-          </div>
-          <div class="flex items-center space-x-3 text-slate-800 dark:text-slate-100">
-            <span class="material-icons-outlined text-emerald-700">local_parking</span><span>Parqueadero</span>
-          </div>
-          <div class="flex items-center space-x-3 text-slate-800 dark:text-slate-100">
-            <span class="material-icons-outlined text-emerald-700">bathtub</span><span>Baño privado</span>
-          </div>
-          <div class="flex items-center space-x-3 text-slate-800 dark:text-slate-100">
-            <span class="material-icons-outlined text-emerald-700">support_agent</span><span>Soporte 24/7</span>
-          </div>
-        </div>
-      </section>
+      <div class="flex items-center gap-2 text-slate-600">
+        <span class="material-symbols-outlined text-lg text-yellow-500">star</span>
+        <span class="font-semibold text-slate-900">
+          {{ a.calificacionPromedio != null ? (a.calificacionPromedio | number:'1.1-1') : '—' }}
+        </span>
+        <span *ngIf="a.cantidadComentarios != null">({{ a.cantidadComentarios }} reseñas)</span>
+      </div>
+    </section>
 
-      <!-- Reserva -->
-      <section class="space-y-4 p-4 border border-gray-200 rounded-lg">
-        <h3 class="text-2xl font-bold text-slate-800 dark:text-slate-100">Reserva tu estadía</h3>
-        <div class="space-y-3">
-          <button class="flex items-center justify-between w-full p-3 border border-gray-200 rounded-lg text-left">
-            <div class="flex items-center space-x-3">
-              <span class="material-icons-outlined text-slate-400">calendar_today</span>
-              <span class="text-slate-500">Fecha Check-in</span>
-            </div>
-            <span class="material-icons-outlined text-slate-400">chevron_right</span>
-          </button>
-          <button class="flex items-center justify-between w-full p-3 border border-gray-200 rounded-lg text-left">
-            <div class="flex items-center space-x-3">
-              <span class="material-icons-outlined text-slate-400">calendar_today</span>
-              <span class="text-slate-500">Fecha Check-out</span>
-            </div>
-            <span class="material-icons-outlined text-slate-400">chevron_right</span>
-          </button>
-        </div>
-
-        <div class="space-y-2 pt-4">
-          <div class="flex justify-between text-slate-500"><span>120$ x 5 noches</span><span>600$</span></div>
-          <div class="flex justify-between text-slate-500"><span>Tarifa de limpieza</span><span>25$</span></div>
-          <div class="flex justify-between text-slate-500"><span>ALOJAPP tarifa</span><span>15$</span></div>
-        </div>
-
-        <hr class="my-4 border-gray-200" />
-        <div class="flex justify-between items-center">
-          <span class="text-xl font-bold text-slate-800 dark:text-slate-100">Total</span>
-          <span class="text-xl font-bold text-slate-800 dark:text-slate-100">640$</span>
-        </div>
-        <button class="w-full mt-4 bg-[#6aa89f] hover:bg-[#5a9a8f] text-white font-bold py-3 px-4 rounded-lg">
-          Reservar ahora
-        </button>
-      </section>
-
-      <!-- Localización (imagen plana) -->
-      <section class="space-y-4">
-        <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100">Localización</h3>
-        <div class="rounded-lg overflow-hidden h-56">
+    <!-- Host -->
+    <section class="p-4 border rounded-lg">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
           <img
-            class="w-full h-full object-cover"
-            alt="Mapa estático del alojamiento"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9LijjuF4wyXkLtktYj_4veeeOl6yLN1V38JBf-YyclAoAExK7ECrM-JsCKH3e61nqhiwqWLeZgn_W2BLOaJgSKo4mN3PpS5oI_bKvCFuJMA6uceVC3I3CPokXEqXOA6qFJcNEoD2HOptSJY_Lq_n1pEu8I_V8ujfUwCmi7YkAaiewrD3YXUrz05baEWIK4cDkCf6mQy-Fc_EoSxrTagIyQAnn15cYTPk9iE5ZjDS54E18RyIqdrS1d4IRLJwZkzClMFVU28bMKWE" />
-        </div>
-      </section>
-
-      <!-- Reseñas (estáticas de tu maqueta) -->
-      <section class="space-y-4">
-        <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100">Reseñas</h3>
-        <div class="flex items-end space-x-2">
-          <p class="text-4xl font-bold text-slate-800 dark:text-slate-100">4.8</p>
-          <p class="text-slate-500">basado en 3 reseñas</p>
-        </div>
-        <div class="flex flex-wrap gap-2">
-          <button class="px-4 py-2 text-sm font-semibold rounded-full bg-emerald-700 text-white">Todas</button>
-          <button class="px-4 py-2 text-sm font-semibold rounded-full bg-white border border-gray-200 text-slate-500">Positivas</button>
-          <button class="px-4 py-2 text-sm font-semibold rounded-full bg-white border border-gray-200 text-slate-500">Negativas</button>
-          <button class="px-4 py-2 text-sm font-semibold rounded-full bg-white border border-gray-200 text-slate-500">Comentarios</button>
-        </div>
-
-        <!-- Reseña 1 -->
-        <div class="p-4 border border-gray-200 rounded-lg space-y-2">
-          <div class="flex items-center space-x-3">
-            <img class="w-10 h-10 rounded-full object-cover" alt="Alice Johnson"
-                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxRVgYsErE5O7jKjPYghvkBFboXEpglZq9DAEjIlpHIpdmlUFEIGSveUHPGWr4oilv2yjlHgW2t96C93cVKJ39PFMK2Tj8l1pmV7inz90CDoM-Pr-7ShOAv8c3lULafm0hzOdnAqeGoOZKa9b7hbises98w1P8hbVEQah6aXwwpk-gDePlnXwA7lugjsp6JpqWa3SbhMdsD2giZgdGUslq9M-IplAahEX0sHK79ohajapaExHejJggHD50fshyZMZxLVaHBYK2Ns4"/>
-            <div>
-              <p class="font-semibold text-slate-800 dark:text-slate-100">Alice Johnson</p>
-              <p class="text-xs text-slate-500">Hace 2 semanas</p>
+            [src]="a.host?.avatarUrl || 'assets/avatar.png'"
+            alt="Anfitrión"
+            class="w-14 h-14 rounded-full object-cover"
+          />
+          <div>
+            <p class="font-bold text-slate-900">{{ a.host?.nombre || 'Anfitrión' }}</p>
+            <div class="flex items-center gap-2 mt-1">
+              <span class="text-xs font-semibold bg-emerald-50 text-emerald-700 px-2 py-1 rounded-full">Anfitrión</span>
+              <span class="text-xs text-slate-500">{{ a.host?.respuestaRapida ? 'Rápida respuesta' : '' }}</span>
             </div>
           </div>
-          <div class="flex items-center">
-            <span class="material-icons-outlined text-yellow-500 text-base">star</span>
-            <span class="material-icons-outlined text-yellow-500 text-base">star</span>
-            <span class="material-icons-outlined text-yellow-500 text-base">star</span>
-            <span class="material-icons-outlined text-yellow-500 text-base">star</span>
-            <span class="material-icons-outlined text-yellow-500 text-base">star</span>
+        </div>
+        <span class="material-symbols-outlined text-slate-400">chevron_right</span>
+      </div>
+    </section>
+
+    <!-- Servicios & Políticas -->
+    <section class="p-4 border rounded-lg">
+      <h3 class="text-xl font-bold mb-4 text-slate-900">Servicios &amp; Políticas</h3>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <ng-container *ngFor="let s of a.servicios || []; trackBy: trackByIndex">
+          <div class="flex items-center gap-3 text-slate-800">
+            <span class="material-symbols-outlined text-emerald-700">{{ iconFor(s) }}</span>
+            <span>{{ s }}</span>
           </div>
-          <p class="text-slate-500">¡Lugar impresionante! Limpio, espacioso y el anfitrión fue amable, lo recomiendo mucho.</p>
+        </ng-container>
+        <div *ngIf="!(a.servicios?.length)" class="text-slate-500">Sin servicios listados.</div>
+      </div>
+    </section>
+
+    <!-- Reserva tu estadía -->
+    <section class="space-y-4 p-4 border rounded-lg">
+      <h3 class="text-2xl font-bold text-slate-900">Reserva tu estadía</h3>
+
+      <div class="space-y-3">
+        <div class="flex items-center justify-between w-full p-3 border rounded-lg">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-slate-500">calendar_today</span>
+            <input
+              type="date"
+              class="border-0 focus:ring-0 p-0 text-slate-600"
+              [(ngModel)]="checkin"
+              aria-label="Fecha Check-in"
+            />
+          </div>
         </div>
 
-        <!-- Reseña 2 -->
-        <div class="p-4 border border-gray-200 rounded-lg space-y-2">
-          <div class="flex items-center space-x-3">
-            <img class="w-10 h-10 rounded-full object-cover" alt="Carlos Vera"
-                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVIw8S7F9qNViBU_kp9qrBPSDJrCxkSuM5iG_z6Gby6ByzLjGInLO9vWF1xTF6j5CgfjGe3vePOygA5ascfx1iZQiRqm07Aii1NgGmE-cMcxgYOcOvg36wVfE-7AtC3g6JIBxTqjWyumg07swfsxCsbqrICTFkAuANiikKF_u_6DKdYGwd3ZSXfn3Uzp0eLFyh_Ci5IrP4pZC7_fEsRvLCXsWFbe9lt8-umw75nJOVjUuTWM4UuctS4Bgg_UVx9KvXZjsKtxKRQt0"/>
+        <div class="flex items-center justify-between w-full p-3 border rounded-lg">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-slate-500">calendar_today</span>
+            <input
+              type="date"
+              class="border-0 focus:ring-0 p-0 text-slate-600"
+              [(ngModel)]="checkout"
+              aria-label="Fecha Check-out"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-2 pt-4 text-slate-600">
+        <div class="flex justify-between">
+          <span>
+            {{ (a.precioNoche || 0) | currency:'USD' }} x {{ noches }} {{ noches === 1 ? 'noche' : 'noches' }}
+          </span>
+          <span>{{ subtotal | currency:'USD' }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Tarifa de limpieza</span><span>{{ feeLimpieza | currency:'USD' }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span>ALOJAPP tarifa</span><span>{{ feePlataforma | currency:'USD' }}</span>
+        </div>
+      </div>
+
+      <hr class="my-4"/>
+
+      <div class="flex justify-between items-center">
+        <span class="text-xl font-bold text-slate-900">Total</span>
+        <span class="text-xl font-bold text-slate-900">{{ total | currency:'USD' }}</span>
+      </div>
+
+      <button
+        class="w-full mt-4 text-white font-bold py-3 px-4 rounded-lg transition
+               bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        [disabled]="noches === 0"
+        (click)="reservarAhora()"
+      >
+        Reservar ahora
+      </button>
+      <p class="text-sm text-slate-500" *ngIf="noches === 0">Selecciona fechas válidas para continuar.</p>
+    </section>
+
+    <!-- Localización (imagen estática) -->
+    <section class="space-y-4">
+      <h3 class="text-xl font-bold text-slate-900">Localización</h3>
+      <div class="rounded-lg overflow-hidden h-56">
+        <img
+          class="w-full h-full object-cover"
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9LijjuF4wyXkLtktYj_4veeeOl6yLN1V38JBf-YyclAoAExK7ECrM-JsCKH3e61nqhiwqWLeZgn_W2BLOaJgSKo4mN3PpS5oI_bKvCFuJMA6uceVC3I3CPokXEqXOA6qFJcNEoD2HOptSJY_Lq_n1pEu8I_V8ujfUwCmi7YkAaiewrD3YXUrz05baEWIK4cDkCf6mQy-Fc_EoSxrTagIyQAnn15cYTPk9iE5ZjDS54E18RyIqdrS1d4IRLJwZkzClMFVU28bMKWE"
+          alt="Mapa estático"
+        />
+      </div>
+    </section>
+
+    <!-- Reseñas -->
+    <section class="space-y-4">
+      <h3 class="text-xl font-bold text-slate-900">Reseñas</h3>
+
+      <div class="flex items-end gap-2">
+        <p class="text-4xl font-bold text-slate-900">
+          {{ a.calificacionPromedio != null ? (a.calificacionPromedio | number:'1.1-1') : '—' }}
+        </p>
+        <p class="text-slate-500">basado en {{ a.cantidadComentarios || 0 }} reseñas</p>
+      </div>
+
+      <div class="space-y-4 pt-2" *ngIf="a.comentarios?.length; else noReviews">
+        <article *ngFor="let c of a.comentarios; trackBy: trackById" class="p-4 border rounded-lg space-y-2">
+          <div class="flex items-center gap-3">
+            <img [src]="c.avatarUrl || 'assets/avatar.png'" alt="avatar" class="w-10 h-10 rounded-full object-cover">
             <div>
-              <p class="font-semibold text-slate-800 dark:text-slate-100">Carlos Vera</p>
-              <p class="text-xs text-slate-500">Hace 1 mes</p>
+              <p class="font-semibold text-slate-900">{{ c.autor }}</p>
+              <p class="text-xs text-slate-500">{{ c.fecha || '' }}</p>
             </div>
           </div>
-          <div class="flex items-center">
-            <span class="material-icons-outlined text-yellow-500 text-base">star</span>
-            <span class="material-icons-outlined text-yellow-500 text-base">star</span>
-            <span class="material-icons-outlined text-yellow-500 text-base">star</span>
-            <span class="material-icons-outlined text-yellow-500 text-base">star</span>
-            <span class="material-icons-outlined text-yellow-500 text-base">star_half</span>
+          <div class="flex items-center gap-1">
+            <span class="material-symbols-outlined text-yellow-500 text-base"
+                  *ngFor="let _ of [].constructor(Math.round(c.calificacion || 0))">star</span>
           </div>
-          <p class="text-slate-500">Muy buena ubicación y el apartamento tenía todo lo necesario. Volvería sin dudarlo.</p>
-        </div>
-      </section>
-    </div>
-  </main>
-</div>
+          <p class="text-slate-600">{{ c.texto }}</p>
+        </article>
+      </div>
+      <ng-template #noReviews>
+        <div class="text-slate-500">Aún no hay reseñas.</div>
+      </ng-template>
+    </section>
+  </div>
+</main>
+
+<ng-template #cargandoTpl>
+  <div class="max-w-5xl mx-auto p-6 text-slate-500">Cargando…</div>
+</ng-template>
