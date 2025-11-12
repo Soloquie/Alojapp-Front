@@ -6,12 +6,10 @@ import { Reserva } from '../models/reserva.models';
 
 export interface CrearReservaPayload {
   alojamientoId: number;
-  fechaInicio: string;   // yyyy-MM-dd
-  fechaFin: string;      // yyyy-MM-dd
-  huespedes?: number;
-  precioNoche?: number;
-  noches: number;
-  total: number;
+  fechaCheckin: string;   // yyyy-MM-dd
+  fechaCheckout: string;  // yyyy-MM-dd
+  numeroHuespedes: number;
+  metodoPago?: string;
 }
 
 export interface ReservaResponse {
@@ -43,7 +41,7 @@ export class ReservasService {
       null
   });
 
-    crearReserva(body: CrearReservaPayload): Observable<ReservaResponse> {
-      return this.http.post<ReservaResponse>(`${this.base}/reservas`, body);
-    }
+crearReserva(body: CrearReservaPayload): Observable<ReservaResponse> {
+  return this.http.post<ReservaResponse>(`${this.base}/reservas`, body);
+}
 }

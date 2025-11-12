@@ -159,52 +159,47 @@ export class DetalleAlojamientoComponent implements OnInit {
   }
 
   private toYYYYMMDD(s: string): string {
-    const d = new Date(s);
-    if (isNaN(d.getTime())) return s;
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    return `${d.getFullYear()}-${mm}-${dd}`;
-  }
+  const d = new Date(s);
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${mm}-${dd}`;
+}
 
-  reservarAhora(): void {
-    this.errorReserva = undefined;
+reservarAhora(): void {
+  this.errorReserva = undefined;
 
-    if (!this.aloj?.id) { this.errorReserva = 'Alojamiento inválido.'; return; }
-    if (!this.checkin || !this.checkout) { this.errorReserva = 'Selecciona check-in y check-out.'; return; }
-    if (this.noches <= 0) { this.errorReserva = 'El check-out debe ser después del check-in.'; return; }
+  if (!this.aloj?.id) { this.errorReserva = 'Alojamiento inválido.'; return; }
+  if (!this.checkin || !this.checkout) { this.errorReserva = 'Selecciona check-in y check-out.'; return; }
+  if (this.noches <= 0) { this.errorReserva = 'El check-out debe ser después del check-in.'; return; }
 
-    // ¿Está logueado?
-    this.auth.loggedIn$.pipe(take(1)).subscribe(isLogged => {
-      if (!isLogged) {
-        const redirect = encodeURIComponent(this.router.url);
-        this.router.navigate(['/auth/login'], { queryParams: { redirect } });
-        return;
+  this.auth.loggedIn$.pipe(take(1)).subscribe(isLogged => {
+    if (!isLogged) {
+      const redirect = encodeURIComponent(this.router.url);
+      this.router.navigate(['/auth/login'], { queryParams: { redirect } });
+      return;
+    }
+
+    this.reservando = true;
+
+    const payload = {
+      alojamientoId: this.aloj!.id,
+      fechaCheckin:  this.toYYYYMMDD(this.checkin),
+      fechaCheckout: this.toYYYYMMDD(this.checkout),
+      numeroHuespedes: this.huespedes ?? 1,
+      metodoPago: 'TARJETA_CREDITO' // opcional, cambia si tienes selector
+    };
+
+    this.reservasSrv.crearReserva(payload).pipe(take(1)).subscribe({
+      next: (resp) => {
+        this.reservando = false;
+        this.router.navigate(['/perfil', 'reservas'], { queryParams: { ok: 1, id: resp.id }});
+      },
+      error: (e) => {
+        this.reservando = false;
+        this.errorReserva = e?.error?.message || 'No se pudo crear la reserva. Intenta de nuevo.';
       }
-
-      // Crear reserva
-      this.reservando = true;
-      const payload = {
-        alojamientoId: this.aloj!.id,
-        fechaInicio: this.toYYYYMMDD(this.checkin),
-        fechaFin: this.toYYYYMMDD(this.checkout),
-        huespedes: this.huespedes,
-        precioNoche: this.aloj?.precioNoche ?? 0,
-        noches: this.noches,
-        total: this.total
-      };
-
-      
-      this.reservasSrv.crearReserva(payload).pipe(take(1)).subscribe({
-        next: (resp) => {
-          this.reservando = false;
-          // Redirige a lista/confirmación de reservas (ajusta la ruta a tu app)
-          this.router.navigate(['/perfil', 'reservas'], { queryParams: { ok: 1, id: resp.id }});
-        },
-        error: () => {
-          this.reservando = false;
-          this.errorReserva = 'No se pudo crear la reserva. Intenta de nuevo.';
-        }
-      });
     });
-  }
+  });
+}
+
 }
