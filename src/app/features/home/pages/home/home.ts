@@ -1,8 +1,8 @@
 // src/app/features/home/pages/home/home.ts
 import { Component, OnInit } from '@angular/core';
-import { Observable, startWith, map } from 'rxjs';
+import { Observable, startWith, map, take } from 'rxjs';
 import { Router } from '@angular/router';
-import { AlojamientoService, AlojamientoCard } from '../../../../core/services/alojamiento.service';
+import { AlojamientoService, AlojamientoCard, SearchFilters } from '../../../../core/services/alojamiento.service';
 import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
@@ -31,6 +31,43 @@ export class HomeComponent implements OnInit {
     { titulo: 'Nueva York, USA', desc: 'La ciudad que nunca duerme.',     img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAnCNmO5MKPyy0hIjHo9lbQlkuthed9mwlujuhwLGaJawlGF3539YcbO7hxIiXcJWoY0hPwfO_vrpGKZd0-LeqeSroaP8CBWOrxf2tmPWoaWTsM2HcF86apwhc6cEVOnAmQ82_dSCbthuuIjlOAgguAz3ElzYPw7oom-UPN-OaI6R_pogby0ugpQdd_i2eob-HPbTmBzK-P-D9wLLH6ufEUweoStV_kxyqZBas2mT0dnWROGlPE5VMN804_Lba1ae6noCv4PrOoeZ4' }
   ];
 
+    private buildFilters(from: 'header' | 'form'): SearchFilters {
+    const f: SearchFilters = {};
+
+    if (from === 'header') {
+      if (this.q?.trim()) f.q = this.q.trim();
+      return f;
+    }
+
+    // desde el formulario grande
+    if (this.ciudad?.trim()) f.ciudad = this.ciudad.trim();
+    if (this.checkin) f.checkin = this.checkin;
+    if (this.checkout) f.checkout = this.checkout;
+    if (this.huespedes != null && this.huespedes > 0) f.huespedes = this.huespedes;
+
+    return f;
+  }
+
+    private goToSearch(from: 'header' | 'form'): void {
+    const filtros = this.buildFilters(from);
+
+    // creamos la URL destino (/buscar?... )
+    const tree = this.router.createUrlTree(['/buscar'], { queryParams: filtros });
+    const targetUrl = tree.toString();   // ej: /buscar?ciudad=Armenia&huespedes=2
+
+    this.auth.loggedIn$.pipe(take(1)).subscribe(isLogged => {
+      if (!isLogged) {
+        this.router.navigate(['/auth/login'], {
+          queryParams: { redirect: targetUrl }
+        });
+        return;
+      }
+
+      // si ya está logueado, vamos directo a /buscar
+      this.router.navigateByUrl(targetUrl);
+    });
+  }
+
   ngOnInit(): void {
     this.isLoggedIn$ = this.auth.loggedIn$;
 
@@ -52,21 +89,14 @@ export class HomeComponent implements OnInit {
   checkout = '';
   huespedes?: number;
 
-  onSubmit(ev: Event) {
-    ev.preventDefault();
-    this.goSearch();
+  goSearchFromHeader(): void {
+    this.goToSearch('header');
   }
 
-  goSearch() {
-    this.router.navigate(['/buscar'], {
-      queryParams: {
-        q: this.q || null,
-        ciudad: this.ciudad || null,
-        checkin: this.checkin || null,
-        checkout: this.checkout || null,
-        huespedes: this.huespedes || null
-      }
-    });
+  /** usado por el botón "Buscar" del formulario */
+  onSubmit(event: Event): void {
+    event.preventDefault();
+    this.goToSearch('form');
   }
 
   openDetalle(a: AlojamientoCard) {

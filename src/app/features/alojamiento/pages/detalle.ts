@@ -1,6 +1,7 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
+import * as L from 'leaflet';
 
 import {
   AlojamientoService,
@@ -10,6 +11,7 @@ import {
 import { ReservasService } from '../../../core/services/reservas.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { take } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 type ComentarioVM = {
   id: number;
@@ -36,6 +38,8 @@ type AlojamientoVM = AlojamientoDTO & {
   host?: HostVM;
   servicios?: string[];
   comentarios?: ComentarioVM[];
+  longitud?: number | null;
+  latitud?: number | null;
   calificacionPromedio?: number | null;
   cantidadComentarios?: number | null;
 };
@@ -46,8 +50,76 @@ type AlojamientoVM = AlojamientoDTO & {
   styleUrls: ['./detalle.scss'],
   standalone: false
 })
-export class DetalleAlojamientoComponent implements OnInit {
+export class DetalleAlojamientoComponent implements OnInit, AfterViewInit  {
   private readonly route = inject(ActivatedRoute);
+
+loggedIn$!: Observable<boolean>;
+  
+@ViewChild('mapElement') mapElement?: ElementRef<HTMLDivElement>;
+
+private map?: L.Map;
+private marker?: L.Marker;
+private mapPendingInit = false;
+
+  estrellas = [1, 2, 3, 4, 5];
+  nuevaCalificacion = 0;
+  nuevoComentario = '';
+  enviandoComentario = false;
+  errorComentario?: string;
+  exitoComentario?: string;
+
+
+ngAfterViewInit(): void {
+  // Si el alojamiento ya está cargado cuando se pinta la vista, inicializamos aquí
+  if (this.aloj && this.mapElement) {
+    this.initMap();
+  }
+}
+
+private tryInitMap(): void {
+  // Solo queremos inicializar si se ha pedido
+  if (!this.mapPendingInit) return;
+  if (!this.aloj) return;
+  if (this.aloj.latitud == null || this.aloj.longitud == null) return;
+  if (!this.mapElement) return;
+
+  // ya tenemos todo
+  this.mapPendingInit = false;
+  this.initMap();
+}
+
+private initMap(): void {
+  if (!this.mapElement || !this.aloj) return;
+
+  const lat = this.aloj?.latitud ?? 4.53389;   // default Armenia
+  const lng = this.aloj?.longitud ?? -75.68111;
+
+  if (!this.map) {
+    this.map = L.map(this.mapElement.nativeElement, {
+      center: [lat, lng],
+      zoom: 13
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap'
+    }).addTo(this.map);
+
+    this.marker = L.marker([lat, lng]).addTo(this.map);
+  } else {
+    this.map.setView([lat, lng], this.map.getZoom());
+    this.marker?.setLatLng([lat, lng]);
+  }
+
+  // Muy importante para evitar el mapa “recortado”
+  setTimeout(() => {
+    this.map?.invalidateSize();
+  }, 200);
+
+  this.tryInitMap();
+
+}
+
 
   constructor(
     private alojSrv: AlojamientoService,
@@ -94,6 +166,7 @@ export class DetalleAlojamientoComponent implements OnInit {
   recalc(): void {/* Getters se recalculan solos; esto sólo triggea change detection */}
 
   ngOnInit(): void {
+    this.loggedIn$ = this.auth.loggedIn$;
     this.route.paramMap.subscribe(pm => {
       const id = Number(pm.get('id'));
       if (!id) { this.error = 'Id inválido'; return; }
@@ -130,7 +203,8 @@ export class DetalleAlojamientoComponent implements OnInit {
           };
 
           this.cargando = false;
-        },
+this.mapPendingInit = true;
+this.tryInitMap();        },
         error: () => {
           this.error = 'No se pudo cargar el alojamiento.';
           this.cargando = false;
@@ -149,6 +223,99 @@ export class DetalleAlojamientoComponent implements OnInit {
     if (s.includes('soporte') || s.includes('24')) return 'support_agent';
     return 'check_circle';
   }
+
+    seleccionarEstrellas(valor: number): void {
+    this.nuevaCalificacion = valor;
+    this.errorComentario = undefined;
+    this.exitoComentario = undefined;
+  }
+
+  enviarComentario(): void {
+    this.errorComentario = undefined;
+    this.exitoComentario = undefined;
+
+    if (!this.aloj?.id) {
+      this.errorComentario = 'Alojamiento inválido.';
+      return;
+    }
+
+    if (this.nuevaCalificacion < 1 || this.nuevaCalificacion > 5) {
+      this.errorComentario = 'Selecciona una calificación entre 1 y 5 estrellas.';
+      return;
+    }
+
+    if (!this.nuevoComentario.trim()) {
+      this.errorComentario = 'Escribe un comentario.';
+      return;
+    }
+
+    this.auth.loggedIn$.pipe(take(1)).subscribe(isLogged => {
+      if (!isLogged) {
+        // Igual que en reservarAhora: redirigir a login
+        const redirect = encodeURIComponent(this.router.url);
+        this.router.navigate(['/auth/login'], { queryParams: { redirect } });
+        return;
+      }
+
+      this.enviandoComentario = true;
+
+      // ⚠️ TODO: AJUSTA ESTE PAYLOAD A TU CrearComentarioRequest REAL ⚠️
+      const payload = {
+        // si tu backend usa reservaId, ponlo aquí
+        // reservaId: ???,
+
+        // si tu backend admite alojamientoId directamente:
+        alojamientoId: this.aloj!.id as any,
+
+        calificacion: this.nuevaCalificacion,
+        comentario: this.nuevoComentario.trim()
+      };
+
+      this.alojSrv.crearComentario(payload as any).pipe(take(1)).subscribe({
+        next: (resp) => {
+          this.enviandoComentario = false;
+          this.exitoComentario = '¡Gracias por tu reseña!';
+
+          // Mapear la respuesta a tu ComentarioVM para añadirlo a la lista
+          const nuevoVM: ComentarioVM = {
+            id: resp.id ?? 0,
+            autor: resp.autorNombre ?? 'Tú',
+            avatarUrl: null,
+            calificacion: Number(resp.calificacion ?? this.nuevaCalificacion),
+            texto: resp.comentario ?? this.nuevoComentario.trim(),
+            fecha: resp.fechaCreacion ?? new Date().toISOString().substring(0, 10)
+          };
+
+          if (!this.aloj!.comentarios) {
+            this.aloj!.comentarios = [];
+          }
+          this.aloj!.comentarios.unshift(nuevoVM);
+
+          // Actualizar contador y promedio “al vuelo”
+          const antes = this.aloj!.cantidadComentarios ?? 0;
+          const promedioAntes = this.aloj!.calificacionPromedio ?? 0;
+
+          const sumaAntes = promedioAntes * antes;
+          const ahoraCantidad = antes + 1;
+          const ahoraPromedio = (sumaAntes + this.nuevaCalificacion) / ahoraCantidad;
+
+          this.aloj!.cantidadComentarios = ahoraCantidad;
+          this.aloj!.calificacionPromedio = ahoraPromedio;
+
+          // reset form
+          this.nuevaCalificacion = 0;
+          this.nuevoComentario = '';
+        },
+        error: (e) => {
+          this.enviandoComentario = false;
+          this.errorComentario =
+            e?.error?.message ||
+            'No se pudo enviar tu reseña. Verifica que tengas una reserva completada para este alojamiento.';
+        }
+      });
+    });
+  }
+
 
   trackByIndex(i: number): number { return i; }
   trackById(_: number, it: { id: number }): number { return it.id; }
@@ -200,6 +367,11 @@ reservarAhora(): void {
       }
     });
   });
+
+  
+  
 }
+
+
 
 }

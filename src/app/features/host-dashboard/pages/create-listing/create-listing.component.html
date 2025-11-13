@@ -42,32 +42,47 @@
     </section>
 
     <!-- Ubicación -->
-    <section>
-      <h2 class="text-xl font-bold mb-3">Ubicación</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <label class="flex flex-col">
-          <span class="font-medium mb-2">Ciudad</span>
-          <input formControlName="ciudad" class="form-input h-14 rounded-lg border p-3" placeholder="Ej: Cartagena" />
-        </label>
+<section>
+  <h2 class="text-xl font-bold mb-3">Ubicación</h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <label class="flex flex-col">
+      <span class="font-medium mb-2">Ciudad</span>
+      <input formControlName="ciudad" class="form-input h-14 rounded-lg border p-3" placeholder="Ej: Cartagena" />
+    </label>
 
-        <label class="flex flex-col">
-          <span class="font-medium mb-2">Dirección</span>
-          <input formControlName="direccion" class="form-input h-14 rounded-lg border p-3" placeholder="Calle 10 #5-20, Bocagrande" />
-        </label>
+    <label class="flex flex-col">
+      <span class="font-medium mb-2">Dirección</span>
+      <input formControlName="direccion" class="form-input h-14 rounded-lg border p-3" placeholder="Calle 10 #5-20, Bocagrande" />
+    </label>
 
-        <label class="flex flex-col">
-          <span class="font-medium mb-2">Latitud</span>
-          <input type="number" step="any" formControlName="latitud"
-                 class="form-input h-14 rounded-lg border p-3" placeholder="10.3910485" />
-        </label>
+    <!-- Mapa a lo ancho -->
+<div class="md:col-span-2">
+  <p class="font-medium mb-2">Selecciona la ubicación en el mapa</p>
 
-        <label class="flex flex-col">
-          <span class="font-medium mb-2">Longitud</span>
-          <input type="number" step="any" formControlName="longitud"
-                 class="form-input h-14 rounded-lg border p-3" placeholder="-75.4794257" />
-        </label>
-      </div>
-    </section>
+  <div class="map-wrapper">
+    <div #mapElement class="leaflet-map"></div>
+  </div>
+
+  <p class="text-xs text-slate-500 mt-1">
+    Haz clic en el mapa para fijar el marcador. Las coordenadas se rellenan abajo.
+  </p>
+</div>
+
+
+
+    <label class="flex flex-col">
+      <span class="font-medium mb-2">Latitud</span>
+      <input type="number" step="any" formControlName="latitud"
+             class="form-input h-14 rounded-lg border p-3" placeholder="10.3910485" />
+    </label>
+
+    <label class="flex flex-col">
+      <span class="font-medium mb-2">Longitud</span>
+      <input type="number" step="any" formControlName="longitud"
+             class="form-input h-14 rounded-lg border p-3" placeholder="-75.4794257" />
+    </label>
+  </div>
+</section>
 
     <!-- Detalles y Servicios -->
     <section>
@@ -88,16 +103,50 @@
                  class="form-input h-14 rounded-lg border p-3" placeholder="4" />
         </label>
 
-        <div class="md:col-span-2">
-          <label class="flex flex-col">
-            <span class="font-medium mb-2">Servicios del Alojamiento</span>
-            <!-- importantísimo: ngValue para mantener number[], no string[] -->
-            <select formControlName="serviciosIds" multiple class="form-select h-36 rounded-lg border p-3">
-              <option *ngFor="let s of (servicios$ | async)" [ngValue]="s.id">{{ s.nombre }}</option>
-            </select>
-            <small class="text-slate-500 mt-1 block">Mantén Ctrl/Cmd para seleccionar varios.</small>
-          </label>
-        </div>
+        <div class="md:col-span-2 space-y-6">
+  <label class="flex flex-col">
+    <span class="font-medium mb-2">Servicios del Alojamiento</span>
+    <select formControlName="serviciosIds" multiple class="form-select h-36 rounded-lg border p-3">
+      <option *ngFor="let s of (servicios$ | async)" [ngValue]="s.id">
+        {{ s.nombre }}
+      </option>
+    </select>
+    <small class="text-slate-500 mt-1 block">
+      Mantén Ctrl/Cmd para seleccionar varios.
+    </small>
+  </label>
+
+  <!-- Card para crear servicio nuevo -->
+  <div class="border rounded-lg p-4 space-y-3 bg-slate-50">
+    <h3 class="font-semibold text-slate-800 text-sm">Agregar nuevo servicio</h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <label class="flex flex-col">
+        <span class="text-sm font-medium mb-1">Nombre del servicio</span>
+        <input formControlName="nuevoServicioNombre"
+               class="form-input h-10 rounded-lg border p-2 text-sm"
+               placeholder="Ej: Desayuno incluido" />
+      </label>
+
+      <label class="flex flex-col md:col-span-1">
+        <span class="text-sm font-medium mb-1">Descripción (opcional)</span>
+        <input formControlName="nuevoServicioDescripcion"
+               class="form-input h-10 rounded-lg border p-2 text-sm"
+               placeholder="Breve descripción" />
+      </label>
+    </div>
+
+    <button type="button"
+            (click)="crearServicio()"
+            [disabled]="creandoServicio"
+            class="mt-2 inline-flex items-center gap-2 h-10 px-4 text-sm font-semibold text-white bg-emerald-700 rounded-lg hover:bg-emerald-600 disabled:opacity-60">
+      <span class="material-symbols-outlined text-sm">add_circle</span>
+      <span *ngIf="!creandoServicio">Guardar servicio</span>
+      <span *ngIf="creandoServicio">Guardando…</span>
+    </button>
+  </div>
+</div>
+
       </div>
     </section>
 

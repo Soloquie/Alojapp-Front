@@ -35,6 +35,12 @@ export interface ComentarioDTO {
 }
 export interface StatsComentarios { promedio: number; total: number; }
 
+export interface CrearComentarioPayload {
+  reservaId?: number;
+  alojamientoId?: number;
+  calificacion: number;
+  comentarioTexto: string;
+}
 
 export interface SearchFilters {
   q?: string;
@@ -93,6 +99,10 @@ export class AlojamientoService {
     return this.http.get<ImagenDTO[]>(`${this.base}/imagenes/alojamiento/${id}`);
   }
 
+    crearComentario(payload: CrearComentarioPayload) {
+    return this.http.post<ComentarioDTO>(`${this.base}/comentarios`, payload);
+  }
+
   getComentariosTop(id: number): Observable<ComentarioDTO[]> {
     return this.http.get<ComentarioDTO[]>(`${this.base}/comentarios/alojamiento/${id}/top`);
   }
@@ -104,6 +114,9 @@ export class AlojamientoService {
 private toDetalle = (it: any): AlojamientoDetalle => ({
   id: it.id ?? it.alojamientoId ?? 0,
   titulo: it.titulo ?? it.nombre ?? 'Alojamiento',
+
+  latitud: it.latitud ?? it.latitude ?? null,
+  longitud: it.longitud ?? it.longitude ?? null,
 
   descripcion: it.descripcion ?? it.detalle ?? '',
   ciudad: typeof it.ciudad === 'string' ? it.ciudad : (it.ciudad?.nombre ?? ''),
@@ -174,6 +187,8 @@ export interface AlojamientoDetalle {
   descripcion?: string;
   ciudad?: string;
   pais?: string;
+  longitud?: number;
+  latitud?: number;
 
   precioNoche?: number | null;
   rating?: number | null;

@@ -3,7 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { SearchResultsComponent } from './pages/results/results';
 
 const routes: Routes = [
-  { path: '', component: SearchResultsComponent, title: 'Resultados de Búsqueda' } // ← RUTA VACÍA
+  { path: '', component: SearchResultsComponent, title: 'Resultados de Búsqueda' }
 ];
 
 @NgModule({

@@ -13,6 +13,13 @@ const FALLBACK_SERVICIOS: ServicioDTO[] = [
   { id: 105, nombre: 'Parqueadero' }
 ];
 
+export interface ServicioDTO {
+  id: number;
+  nombre: string;
+  descripcion?: string;
+  iconoUrl?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ServiciosService {
   private base = environment.apiUrl;
@@ -27,5 +34,9 @@ export class ServiciosService {
       catchError(() => of(FALLBACK_SERVICIOS)),
       shareReplay(1)
     );
+  }
+
+    create$(payload: { nombre: string; descripcion?: string; iconoUrl?: string | null }) {
+    return this.http.post<ServicioDTO>(`${this.base}/servicios`, payload);
   }
 }

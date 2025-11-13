@@ -1,86 +1,131 @@
-<div class="min-h-screen">
+<div class="min-h-screen bg-background-light">
+  <!-- HEADER -->
   <header class="sticky top-0 z-40 bg-[#6b8a80] shadow-md">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-20">
-        <a class="text-3xl font-bold text-white tracking-wider" routerLink="/home">ALOJAPP</a>
+        <a class="text-3xl font-bold text-white tracking-wider" routerLink="/home">
+          ALOJAPP
+        </a>
 
-        <!-- buscador superior -->
+        <!-- buscador superior (solo visual aquí, la búsqueda real viene desde home) -->
         <div class="flex-1 flex justify-center px-8">
           <div class="w-full max-w-lg relative">
-            <span class="material-icons-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-200">search</span>
+            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-200">
+              search
+            </span>
             <input
-              [(ngModel)]="q"
-              (keyup.enter)="go(q)"
               class="w-full pl-12 pr-4 py-3 rounded-full bg-white border-transparent
                      focus:ring-2 focus:ring-[#6b8a80] focus:border-transparent"
               placeholder="Buscar alojamientos..."
               type="text"
+              disabled
             />
           </div>
         </div>
 
         <nav class="hidden md:flex items-center space-x-6">
           <a class="text-white hover:text-gray-200 transition-colors" routerLink="/home">Explorar</a>
-          <a class="text-white hover:text-gray-200 transition-colors" routerLink="/host">Ser anfitrión</a>
-          <a class="text-white hover:text-gray-200 transition-colors" routerLink="/perfil">Perfil</a>
+<a *ngIf="(isHost$ | async); else ser"
+          class="text-white hover:text-white/80 transition font-medium"
+          routerLink="/anfitrion">Anfitrión</a>
+        <ng-template #ser>
+          <a class="text-white hover:text-white/80 transition font-medium"
+            routerLink="/ser-anfitrion">Ser anfitrión</a>
+        </ng-template>          <a class="text-white hover:text-gray-200 transition-colors" routerLink="/perfil">Perfil</a>
         </nav>
       </div>
     </div>
   </header>
 
+  <!-- MAIN -->
   <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="max-w-7xl mx-auto">
-      <div class="mb-8">
-        <h1 class="text-4xl font-bold mb-4">Resultados de Búsqueda</h1>
+      <div class="mb-6 flex items-center justify-between">
+        <div>
+          <h1 class="text-4xl font-bold mb-2 text-slate-900">Resultados de Búsqueda</h1>
+          <p class="text-slate-500 text-sm">
+            Ciudad:
+            <span class="font-semibold">{{ filtrosActuales.ciudad || 'Cualquier ciudad' }}</span>
+            · Huéspedes:
+            <span class="font-semibold">{{ filtrosActuales.huespedes || 'Cualquiera' }}</span>
+          </p>
+        </div>
+        <button
+          class="hidden sm:inline-flex text-sm text-slate-600 hover:text-slate-900"
+          (click)="goHome()">
+          &larr; Volver al inicio
+        </button>
       </div>
 
-      <!-- filtros visuales (pendiente de lógica) -->
+      <!-- Filtros visuales (solo UI por ahora) -->
       <div class="mb-8 flex flex-wrap gap-3">
-        <button class="flex items-center space-x-2 px-4 py-2 rounded-full bg-white border hover:bg-gray-100">
-          <span class="material-icons-outlined">payments</span>
+        <button
+          class="flex items-center space-x-2 px-4 py-2 rounded-full bg-white border border-slate-200
+                 hover:bg-gray-100 transition-colors">
+          <span class="material-symbols-outlined text-slate-500">payments</span>
           <span>Precio</span>
-          <span class="material-icons-outlined">expand_more</span>
+          <span class="material-symbols-outlined text-slate-500">expand_more</span>
         </button>
-        <button class="flex items-center space-x-2 px-4 py-2 rounded-full bg-white border hover:bg-gray-100">
-          <span class="material-icons-outlined">local_laundry_service</span>
+        <button
+          class="flex items-center space-x-2 px-4 py-2 rounded-full bg-white border border-slate-200
+                 hover:bg-gray-100 transition-colors">
+          <span class="material-symbols-outlined text-slate-500">apartment</span>
+          <span>Tipo</span>
+          <span class="material-symbols-outlined text-slate-500">expand_more</span>
+        </button>
+        <button
+          class="flex items-center space-x-2 px-4 py-2 rounded-full bg-white border border-slate-200
+                 hover:bg-gray-100 transition-colors">
+          <span class="material-symbols-outlined text-slate-500">local_laundry_service</span>
           <span>Servicios</span>
-          <span class="material-icons-outlined">expand_more</span>
+          <span class="material-symbols-outlined text-slate-500">expand_more</span>
         </button>
       </div>
 
-      <!-- grid de resultados -->
+      <!-- GRID RESULTADOS -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        <ng-container *ngIf="results$ | async as results; else skeleton">
+        <ng-container *ngIf="results$ | async as results; else cargandoTpl">
           <article
-            *ngFor="let a of results"
-            class="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 flex flex-col"
-          >
+  *ngFor="let a of results"
+  class="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 flex flex-col cursor-pointer"
+  (click)="openAlojamiento(a.id)"
+>
             <div class="relative">
-              <img [alt]="a.titulo" [src]="foto(a)" class="w-full h-56 object-cover" />
+              <img
+                [alt]="a.titulo"
+                [src]="foto(a)"
+                class="w-full h-56 object-cover"
+              />
               <div class="absolute bottom-3 right-3 flex space-x-2">
-                <button class="w-10 h-10 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/50 transition-colors">
-                  <span class="material-icons-outlined">favorite</span>
+                <button
+                  class="w-10 h-10 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/50 transition-colors">
+                  <span class="material-symbols-outlined">favorite</span>
                 </button>
-                <button class="w-10 h-10 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/50 transition-colors">
-                  <span class="material-icons-outlined">share</span>
+                <button
+                  class="w-10 h-10 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/50 transition-colors">
+                  <span class="material-symbols-outlined">share</span>
                 </button>
               </div>
             </div>
 
             <div class="p-5 flex-grow flex flex-col">
-              <h3 class="text-xl font-bold mb-1">{{ a.titulo }}</h3>
-              <p class="flex items-center text-sm mb-4 text-slate-600">
-                <span class="material-icons-outlined text-base mr-1">location_on</span>
+              <h3 class="text-xl font-bold text-slate-900 mb-1">{{ a.titulo }}</h3>
+              <p class="flex items-center text-slate-600 text-sm mb-4">
+                <span class="material-symbols-outlined text-base mr-1">location_on</span>
                 {{ ubicacion(a) || '—' }}
               </p>
               <div class="mt-auto flex justify-between items-center">
                 <div>
-                  <span class="text-2xl font-bold">{{ precio(a) }}</span>
+                  <span class="text-2xl font-bold text-slate-900">{{ precio(a) }}</span>
                   <span class="text-slate-500">/noche</span>
                 </div>
                 <div class="flex items-center space-x-1">
-                  <span class="material-icons-outlined text-yellow-500 text-lg" style="font-variation-settings:'FILL' 1;">star</span>
-                  <span class="font-semibold">{{ rating(a) }}</span>
+                  <span
+                    class="material-symbols-outlined text-yellow-500 text-lg"
+                    style="font-variation-settings:'FILL' 1;">
+                    star
+                  </span>
+                  <span class="font-semibold text-slate-900">{{ rating(a) }}</span>
                 </div>
               </div>
             </div>
@@ -91,8 +136,10 @@
           </div>
         </ng-container>
 
-        <ng-template #skeleton>
-          <div class="col-span-full text-slate-500">Cargando resultados…</div>
+        <ng-template #cargandoTpl>
+          <div class="col-span-full text-slate-500">
+            Cargando resultados…
+          </div>
         </ng-template>
       </div>
     </div>

@@ -131,19 +131,32 @@
       <p class="text-sm text-slate-500" *ngIf="noches === 0">Selecciona fechas válidas para continuar.</p>
     </section>
 
-    <!-- Localización (imagen estática) -->
-    <section class="space-y-4">
-      <h3 class="text-xl font-bold text-slate-900">Localización</h3>
-      <div class="rounded-lg overflow-hidden h-56">
-        <img
-          class="w-full h-full object-cover"
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9LijjuF4wyXkLtktYj_4veeeOl6yLN1V38JBf-YyclAoAExK7ECrM-JsCKH3e61nqhiwqWLeZgn_W2BLOaJgSKo4mN3PpS5oI_bKvCFuJMA6uceVC3I3CPokXEqXOA6qFJcNEoD2HOptSJY_Lq_n1pEu8I_V8ujfUwCmi7YkAaiewrD3YXUrz05baEWIK4cDkCf6mQy-Fc_EoSxrTagIyQAnn15cYTPk9iE5ZjDS54E18RyIqdrS1d4IRLJwZkzClMFVU28bMKWE"
-          alt="Mapa estático"
-        />
-      </div>
-    </section>
+    <!-- Localización -->
+<section class="space-y-4" *ngIf="a.latitud != null && a.longitud != null; else noCoords">
+  <h3 class="text-xl font-bold text-slate-900">Localización</h3>
+
+  <div class="map-wrapper">
+    <div #mapElement class="leaflet-map"></div>
+  </div>
+
+  <p class="text-sm text-slate-500">
+    Lat: {{ a.latitud | number:'1.4-6' }},
+    Lng: {{ a.longitud | number:'1.4-6' }}
+  </p>
+</section>
+
+<ng-template #noCoords>
+  <section class="space-y-4">
+    <h3 class="text-xl font-bold text-slate-900">Localización</h3>
+    <div class="rounded-lg overflow-hidden h-56 flex items-center justify-center border text-slate-500">
+      Este alojamiento aún no tiene coordenadas registradas.
+    </div>
+  </section>
+</ng-template>
+
 
     <!-- Reseñas -->
+        <!-- Reseñas -->
     <section class="space-y-4">
       <h3 class="text-xl font-bold text-slate-900">Reseñas</h3>
 
@@ -174,6 +187,90 @@
         <div class="text-slate-500">Aún no hay reseñas.</div>
       </ng-template>
     </section>
+
+    <!-- Comentar y calificar (solo usuarios logueados) -->
+    <section
+      class="space-y-4 p-4 border rounded-lg"
+      *ngIf="loggedIn$ | async"
+    >
+      <h3 class="text-xl font-bold text-slate-900">Comentar y calificar</h3>
+
+      <!-- Calificación -->
+      <div>
+        <label class="block text-sm font-medium text-slate-600 mb-2">
+          Tu calificación
+        </label>
+        <div class="flex items-center gap-1">
+          <button
+            type="button"
+            *ngFor="let s of estrellas"
+            (click)="seleccionarEstrellas(s)"
+            class="text-3xl transition"
+          >
+            <span
+              class="material-symbols-outlined"
+              [ngClass]="{
+                'text-yellow-400': s <= nuevaCalificacion,
+                'text-slate-300': s > nuevaCalificacion
+              }"
+              style="font-variation-settings:'FILL' 1"
+            >
+              star
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Comentario -->
+      <div>
+        <label class="block text-sm font-medium text-slate-600 mb-2">
+          Tu comentario
+        </label>
+        <textarea
+          rows="4"
+          class="block w-full rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-slate-900"
+          [(ngModel)]="nuevoComentario"
+          placeholder="Escribe tu reseña aquí..."
+        ></textarea>
+      </div>
+
+      <!-- Mensajes de error / éxito -->
+      <p *ngIf="errorComentario" class="text-sm text-red-600">
+        {{ errorComentario }}
+      </p>
+      <p *ngIf="exitoComentario" class="text-sm text-emerald-700">
+        {{ exitoComentario }}
+      </p>
+
+      <!-- Botón enviar -->
+      <button
+        type="button"
+        class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg
+               disabled:opacity-50 disabled:cursor-not-allowed"
+        [disabled]="enviandoComentario || !nuevaCalificacion || !nuevoComentario.trim()"
+        (click)="enviarComentario()"
+      >
+        {{ enviandoComentario ? 'Enviando…' : 'Enviar reseña' }}
+      </button>
+    </section>
+
+    <!-- Si no está logueado -->
+    <section
+      class="space-y-2 p-4 border rounded-lg bg-slate-50"
+      *ngIf="!(loggedIn$ | async)"
+    >
+      <h3 class="text-xl font-bold text-slate-900">¿Quieres dejar una reseña?</h3>
+      <p class="text-sm text-slate-600">
+        Debes iniciar sesión y haber completado una reserva para poder calificar este alojamiento.
+      </p>
+      <button
+        class="inline-flex items-center gap-2 mt-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg"
+        (click)="back()"
+      >
+        Volver
+      </button>
+    </section>
+
   </div>
 </main>
 
