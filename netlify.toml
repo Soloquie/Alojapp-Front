@@ -1,6 +1,6 @@
 [build]
-command = "npm install --legacy-peer-deps && npx ng build --output-path=dist/alojapp"
-publish = "dist/alojapp"
+command = "npm install --legacy-peer-deps && npx ng build"
+publish = "dist"
 
 [[redirects]]
 from = "/*"
