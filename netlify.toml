@@ -1,8 +1,11 @@
 [build]
-command = "npm install --legacy-peer-deps && npx ng build"
-publish = "dist"
+command = "rm -rf dist && npm ci --legacy-peer-deps && npm run build && ls -la dist/"
+publish = "dist/alojapp"
 
 [[redirects]]
 from = "/*"
 to = "/index.html"
 status = 200
+
+[build.environment]
+NODE_VERSION = "18"
