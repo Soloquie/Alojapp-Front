@@ -6,7 +6,6 @@ import { take } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/auth.service';
 import { AnfitrionService, ConvertirmeAnfitrionReq } from '../../../core/services/anfitrion';
 import { ActivatedRoute } from '@angular/router';
-// ...
 
 @Component({
   selector: 'app-ser-anfitrion',
@@ -30,9 +29,7 @@ export class SerAnfitrionComponent implements OnInit {
 
   form = this.fb.group({
     descripcionPersonal: ['', [Validators.required, Validators.maxLength(1000)]],
-    // lo llenaremos automáticamente con el primer link si existe
     documentosLegalesUrl: [''],
-    // opcional; por defecto hoy
     fechaRegistro: [this.today()]
   });
 
@@ -62,7 +59,6 @@ export class SerAnfitrionComponent implements OnInit {
       return;
     }
 
-    // Convertimos a links locales (no se suben)
     for (const f of Array.from(files)) {
       const url = URL.createObjectURL(f);
       this.docLinks.push(url);

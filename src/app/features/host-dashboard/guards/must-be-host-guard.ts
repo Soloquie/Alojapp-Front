@@ -1,4 +1,3 @@
-// src/app/features/host-dashboard/guards/must-be-host-guard.ts
 import { NgModule, inject } from '@angular/core';
 import { Router, RouterModule, Routes, CanActivateFn } from '@angular/router';
 import { combineLatest, map, take } from 'rxjs';

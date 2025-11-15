@@ -1,4 +1,3 @@
-// src/app/features/host-dashboard/pages/dashboard/dashboard.ts
 import { Component, OnInit } from '@angular/core';
 import { finalize, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -24,7 +23,7 @@ export interface CrearAlojRequest {
   longitud?: number | null;
   precioNoche: number;
   capacidadMaxima: number;
-  serviciosIds?: number[]; // opcional
+  serviciosIds?: number[]; 
 }
 
 export interface AlojamientoDTO {

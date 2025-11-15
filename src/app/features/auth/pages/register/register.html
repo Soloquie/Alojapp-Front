@@ -1,7 +1,7 @@
 <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
   <div class="max-w-md w-full space-y-8">
     <div class="text-center">
-      <h1 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+      <h1 class="text-3xl font-bold text-slate-900 dark:text-black tracking-tight">
         Únete a ALOJAPP
       </h1>
       <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
@@ -23,9 +23,9 @@
             placeholder="Tu nombre completo"
             formControlName="nombre"
             class="appearance-none relative block w-full px-3 py-2 border
-                   border-slate-300 dark:border-slate-600 placeholder-slate-400 dark:placeholder-slate-500
-                   text-slate-900 dark:text-white rounded-md focus:outline-none focus:ring-primary
-                   focus:border-primary sm:text-sm bg-background-light dark:bg-slate-800"
+       border-slate-300 placeholder-slate-400
+       text-slate-900 rounded-md focus:outline-none focus:ring-primary
+       focus:border-primary sm:text-sm bg-white"
             [ngClass]="{ 'border-red-500': nombreCtrl.touched && nombreCtrl.invalid }"
           />
           <small class="text-red-600" *ngIf="nombreCtrl.touched && nombreCtrl.hasError('required')">El nombre es obligatorio.</small>
@@ -46,9 +46,9 @@
             placeholder="tu.email@example.com"
             formControlName="email"
             class="appearance-none relative block w-full px-3 py-2 border
-                   border-slate-300 dark:border-slate-600 placeholder-slate-400 dark:placeholder-slate-500
-                   text-slate-900 dark:text-white rounded-md focus:outline-none focus:ring-primary
-                   focus:border-primary sm:text-sm bg-background-light dark:bg-slate-800"
+       border-slate-300 placeholder-slate-400
+       text-slate-900 rounded-md focus:outline-none focus:ring-primary
+       focus:border-primary sm:text-sm bg-white"
             [ngClass]="{ 'border-red-500': emailCtrl.touched && emailCtrl.invalid }"
           />
           <small class="text-red-600" *ngIf="emailCtrl.touched && emailCtrl.hasError('required')">El correo es obligatorio.</small>
@@ -68,9 +68,9 @@
               placeholder="Contraseña segura"
               formControlName="password"
               class="appearance-none relative block w-full px-3 py-2 border
-                     border-slate-300 dark:border-slate-600 placeholder-slate-400 dark:placeholder-slate-500
-                     text-slate-900 dark:text-white rounded-md focus:outline-none focus:ring-primary
-                     focus:border-primary sm:text-sm bg-background-light dark:bg-slate-800"
+       border-slate-300 placeholder-slate-400
+       text-slate-900 rounded-md focus:outline-none focus:ring-primary
+       focus:border-primary sm:text-sm bg-white"
               [ngClass]="{ 'border-red-500': passwordCtrl.touched && passwordCtrl.invalid }"
             />
             <button type="button"
@@ -99,10 +99,10 @@
             autocomplete="tel"
             placeholder="+57 3001234567"
             formControlName="phone"
-            class="appearance-none relative block w-full px-3 py-2 border
-                   border-slate-300 dark:border-slate-600 placeholder-slate-400 dark:placeholder-slate-500
-                   text-slate-900 dark:text-white rounded-md focus:outline-none focus:ring-primary
-                   focus:border-primary sm:text-sm bg-background-light dark:bg-slate-800"
+           class="appearance-none relative block w-full px-3 py-2 border
+       border-slate-300 placeholder-slate-400
+       text-slate-900 rounded-md focus:outline-none focus:ring-primary
+       focus:border-primary sm:text-sm bg-white"
             [ngClass]="{ 'border-red-500': phoneCtrl.touched && phoneCtrl.invalid }"
           />
           <small class="text-red-600" *ngIf="phoneCtrl.hasError('pattern')">Formato inválido (solo dígitos y opcional +, 10–20).</small>
@@ -118,10 +118,10 @@
             type="date"
             autocomplete="bday"
             formControlName="birthdate"
-            class="appearance-none relative block w-full px-3 py-2 border
-                   border-slate-300 dark:border-slate-600 placeholder-slate-400 dark:placeholder-slate-500
-                   text-slate-900 dark:text-white rounded-md focus:outline-none focus:ring-primary
-                   focus:border-primary sm:text-sm bg-background-light dark:bg-slate-800"
+           class="appearance-none relative block w-full px-3 py-2 border
+       border-slate-300 placeholder-slate-400
+       text-slate-900 rounded-md focus:outline-none focus:ring-primary
+       focus:border-primary sm:text-sm bg-white"
             [ngClass]="{ 'border-red-500': birthdateCtrl.touched && birthdateCtrl.invalid }"
           />
           <small class="text-red-600" *ngIf="birthdateCtrl.touched && birthdateCtrl.hasError('required')">La fecha es obligatoria.</small>

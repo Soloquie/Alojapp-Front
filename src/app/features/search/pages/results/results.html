@@ -7,21 +7,6 @@
           ALOJAPP
         </a>
 
-        <!-- buscador superior (solo visual aquí, la búsqueda real viene desde home) -->
-        <div class="flex-1 flex justify-center px-8">
-          <div class="w-full max-w-lg relative">
-            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-200">
-              search
-            </span>
-            <input
-              class="w-full pl-12 pr-4 py-3 rounded-full bg-white border-transparent
-                     focus:ring-2 focus:ring-[#6b8a80] focus:border-transparent"
-              placeholder="Buscar alojamientos..."
-              type="text"
-              disabled
-            />
-          </div>
-        </div>
 
         <nav class="hidden md:flex items-center space-x-6">
           <a class="text-white hover:text-gray-200 transition-colors" routerLink="/home">Explorar</a>
@@ -53,7 +38,7 @@
         <button
           class="hidden sm:inline-flex text-sm text-slate-600 hover:text-slate-900"
           (click)="goHome()">
-          &larr; Volver al inicio
+        <span class="material-symbols-outlined text-2xl">arrow_back</span>
         </button>
       </div>
 

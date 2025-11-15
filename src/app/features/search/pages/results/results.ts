@@ -20,7 +20,6 @@ export class SearchResultsComponent implements OnInit {
   isHost$!: Observable<boolean>;
 
   results$!: Observable<AlojamientoCard[]>;
-  // para mostrar lo que se buscó
   filtrosActuales: Partial<SearchFilters> = {};
 
   constructor(
@@ -54,12 +53,10 @@ export class SearchResultsComponent implements OnInit {
         this.filtrosActuales = f;
         return f;
       }),
-      // si no mandas filtros, buscar({}) devuelve todos los alojamientos
       switchMap(f => this.alojSrv.buscar(f))
     );
   }
 
-  // Helpers iguales a los del home para mantener consistencia
   ubicacion(a: AlojamientoCard): string {
     if (!a.ciudad && !a.pais) return '';
     if (!a.pais) return a.ciudad ?? '';

@@ -6,7 +6,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: "#587D71",              // 👈 tu color del header/footer/botón
+        primary: "#587D71",             
         "background-light": "#F8F9FA",
         "background-dark": "#121212",
         "surface-light": "#FFFFFF",
@@ -15,6 +15,7 @@ module.exports = {
         "text-dark": "#E0E0E0",
         "text-muted-light": "#6C757D",
         "text-muted-dark": "#9E9E9E",
+        "text-black":"#000000ff",
         "border-light": "#DEE2E6",
         "border-dark": "#424242",
       },

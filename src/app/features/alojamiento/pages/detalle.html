@@ -1,142 +1,153 @@
-<header class="sticky top-0 z-10 flex items-center justify-center p-4 bg-white border-b">
-  <button class="absolute left-4 text-slate-700" (click)="back()">
-    <span class="material-symbols-outlined">arrow_back</span>
-  </button>
-  <h1 class="text-lg font-bold text-slate-800">Detalles de Alojamiento</h1>
-</header>
+  <header class="sticky top-0 z-10 flex items-center justify-center p-4 bg-white border-b">
+    <button class="absolute left-4 text-slate-700" (click)="back()">
+      <span class="material-symbols-outlined">arrow_back</span>
+    </button>
+    <h1 class="text-lg font-bold text-slate-800">Detalles de Alojamiento</h1>
+  </header>
 
-<main *ngIf="!cargando && aloj as a; else cargandoTpl" class="max-w-5xl mx-auto">
-  <!-- HERO -->
-  <img
-    class="w-full h-64 object-cover"
-    [src]="a.portadaUrl || a.imagenPrincipalUrl || a.imagenes?.[0] || 'assets/placeholder.jpg'"
-    alt="Portada del alojamiento"
-  />
+  <main *ngIf="!cargando && aloj as a; else cargandoTpl" class="max-w-5xl mx-auto">
+    <!-- HERO -->
+    <img
+      class="w-full h-64 object-cover"
+      [src]="a.portadaUrl || a.imagenPrincipalUrl || a.imagenes?.[0] || 'assets/placeholder.jpg'"
+      alt="Portada del alojamiento"
+    />
 
-  <div class="p-6 space-y-6">
-    <!-- Título + ubicación + rating -->
-    <section class="space-y-2">
-      <h2 class="text-3xl font-bold text-slate-900">{{ a.titulo }}</h2>
+    <div class="p-6 space-y-6">
+      <!-- Título + ubicación + rating -->
+      <section class="space-y-2">
+        <h2 class="text-3xl font-bold text-slate-900">{{ a.titulo }}</h2>
 
-      <div class="flex items-center gap-2 text-slate-600">
-        <span class="material-symbols-outlined text-lg">location_on</span>
-        <span>{{ a.ciudad || '—' }}<ng-container *ngIf="a.pais">, {{ a.pais }}</ng-container></span>
+        <div class="flex items-center gap-2 text-slate-600">
+          <span class="material-symbols-outlined text-lg">location_on</span>
+          <span>{{ a.ciudad || '—' }}<ng-container *ngIf="a.pais">, {{ a.pais }}</ng-container></span>
+        </div>
+
+        <div class="flex items-center gap-2 text-slate-600">
+          <span class="material-symbols-outlined text-lg text-yellow-500">star</span>
+          <span class="font-semibold text-slate-900">
+            {{ a.calificacionPromedio != null ? (a.calificacionPromedio | number:'1.1-1') : '—' }}
+          </span>
+          <span *ngIf="a.cantidadComentarios != null">({{ a.cantidadComentarios }} reseñas)</span>
+        </div>
+      </section>
+
+      <!-- Host -->
+      <section class="p-4 border rounded-lg">
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <img
+        [src]="a.anfitrion?.fotoUrl || 'assets/avatar.png'"
+        alt="Anfitrión"
+        class="w-14 h-14 rounded-full object-cover"
+      />
+      <div>
+        <p class="font-bold text-slate-900">{{ a.anfitrion?.nombre || 'Anfitrión' }}</p>
+        <div class="flex items-center gap-2 mt-1">
+          <span class="text-xs font-semibold bg-emerald-50 text-emerald-700 px-2 py-1 rounded-full">
+            Anfitrión
+          </span>
+          <span class="text-xs text-slate-500">
+            {{ a.anfitrion?.respuestaRapida ? 'Rápida respuesta' : '' }}
+          </span>
+        </div>
       </div>
+    </div>
+    <span class="material-symbols-outlined text-slate-400">chevron_right</span>
+  </div>
+</section>
 
-      <div class="flex items-center gap-2 text-slate-600">
-        <span class="material-symbols-outlined text-lg text-yellow-500">star</span>
-        <span class="font-semibold text-slate-900">
-          {{ a.calificacionPromedio != null ? (a.calificacionPromedio | number:'1.1-1') : '—' }}
-        </span>
-        <span *ngIf="a.cantidadComentarios != null">({{ a.cantidadComentarios }} reseñas)</span>
-      </div>
-    </section>
 
-    <!-- Host -->
-    <section class="p-4 border rounded-lg">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-4">
-          <img
-            [src]="a.host?.avatarUrl || 'assets/avatar.png'"
-            alt="Anfitrión"
-            class="w-14 h-14 rounded-full object-cover"
-          />
-          <div>
-            <p class="font-bold text-slate-900">{{ a.host?.nombre || 'Anfitrión' }}</p>
-            <div class="flex items-center gap-2 mt-1">
-              <span class="text-xs font-semibold bg-emerald-50 text-emerald-700 px-2 py-1 rounded-full">Anfitrión</span>
-              <span class="text-xs text-slate-500">{{ a.host?.respuestaRapida ? 'Rápida respuesta' : '' }}</span>
+      <!-- Servicios & Políticas -->
+      <section class="p-4 border rounded-lg">
+        <h3 class="text-xl font-bold mb-4 text-slate-900">Servicios &amp; Políticas</h3>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <ng-container *ngFor="let s of a.servicios || []; trackBy: trackByIndex">
+            <div class="flex items-center gap-3 text-slate-800">
+              <span class="material-symbols-outlined text-emerald-700">{{ iconFor(s) }}</span>
+              <span>{{ s }}</span>
+            </div>
+          </ng-container>
+          <div *ngIf="!(a.servicios?.length)" class="text-slate-500">Sin servicios listados.</div>
+        </div>
+      </section>
+
+      <!-- Reserva tu estadía -->
+      <section class="space-y-4 p-4 border rounded-lg">
+        <h3 class="text-2xl font-bold text-slate-900">Reserva tu estadía</h3>
+
+        <div class="space-y-3">
+          <div class="flex items-center justify-between w-full p-3 border rounded-lg">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-slate-500">calendar_today</span>
+              <input
+                type="date"
+                class="border-0 focus:ring-0 p-0 text-slate-600"
+                [(ngModel)]="checkin"
+                aria-label="Fecha Check-in"
+              />
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between w-full p-3 border rounded-lg">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-slate-500">calendar_today</span>
+              <input
+                type="date"
+                class="border-0 focus:ring-0 p-0 text-slate-600"
+                [(ngModel)]="checkout"
+                aria-label="Fecha Check-out"
+              />
             </div>
           </div>
         </div>
-        <span class="material-symbols-outlined text-slate-400">chevron_right</span>
-      </div>
-    </section>
 
-    <!-- Servicios & Políticas -->
-    <section class="p-4 border rounded-lg">
-      <h3 class="text-xl font-bold mb-4 text-slate-900">Servicios &amp; Políticas</h3>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <ng-container *ngFor="let s of a.servicios || []; trackBy: trackByIndex">
-          <div class="flex items-center gap-3 text-slate-800">
-            <span class="material-symbols-outlined text-emerald-700">{{ iconFor(s) }}</span>
-            <span>{{ s }}</span>
+        <div class="space-y-2 pt-4 text-slate-600">
+          <div class="flex justify-between">
+            <span>
+              {{ (a.precioNoche || 0) | currency:'USD' }} x {{ noches }} {{ noches === 1 ? 'noche' : 'noches' }}
+            </span>
+            <span>{{ subtotal | currency:'USD' }}</span>
           </div>
-        </ng-container>
-        <div *ngIf="!(a.servicios?.length)" class="text-slate-500">Sin servicios listados.</div>
-      </div>
-    </section>
-
-    <!-- Reserva tu estadía -->
-    <section class="space-y-4 p-4 border rounded-lg">
-      <h3 class="text-2xl font-bold text-slate-900">Reserva tu estadía</h3>
-
-      <div class="space-y-3">
-        <div class="flex items-center justify-between w-full p-3 border rounded-lg">
-          <div class="flex items-center gap-3">
-            <span class="material-symbols-outlined text-slate-500">calendar_today</span>
-            <input
-              type="date"
-              class="border-0 focus:ring-0 p-0 text-slate-600"
-              [(ngModel)]="checkin"
-              aria-label="Fecha Check-in"
-            />
+          <div class="flex justify-between">
+            <span>Tarifa de limpieza</span><span>{{ feeLimpieza | currency:'USD' }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span>ALOJAPP tarifa</span><span>{{ feePlataforma | currency:'USD' }}</span>
           </div>
         </div>
 
-        <div class="flex items-center justify-between w-full p-3 border rounded-lg">
-          <div class="flex items-center gap-3">
-            <span class="material-symbols-outlined text-slate-500">calendar_today</span>
-            <input
-              type="date"
-              class="border-0 focus:ring-0 p-0 text-slate-600"
-              [(ngModel)]="checkout"
-              aria-label="Fecha Check-out"
-            />
-          </div>
+        <hr class="my-4"/>
+
+        <div class="flex justify-between items-center">
+          <span class="text-xl font-bold text-slate-900">Total</span>
+          <span class="text-xl font-bold text-slate-900">{{ total | currency:'USD' }}</span>
         </div>
-      </div>
 
-      <div class="space-y-2 pt-4 text-slate-600">
-        <div class="flex justify-between">
-          <span>
-            {{ (a.precioNoche || 0) | currency:'USD' }} x {{ noches }} {{ noches === 1 ? 'noche' : 'noches' }}
-          </span>
-          <span>{{ subtotal | currency:'USD' }}</span>
-        </div>
-        <div class="flex justify-between">
-          <span>Tarifa de limpieza</span><span>{{ feeLimpieza | currency:'USD' }}</span>
-        </div>
-        <div class="flex justify-between">
-          <span>ALOJAPP tarifa</span><span>{{ feePlataforma | currency:'USD' }}</span>
-        </div>
-      </div>
+        <button
+          class="w-full mt-4 text-white font-bold py-3 px-4 rounded-lg transition
+                bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          [disabled]="noches === 0"
+          (click)="reservarAhora()"
+        >
+          Reservar ahora
+        </button>
+        <p class="text-sm text-slate-500" *ngIf="noches === 0">Selecciona fechas válidas para continuar.</p>
+      </section>
 
-      <hr class="my-4"/>
-
-      <div class="flex justify-between items-center">
-        <span class="text-xl font-bold text-slate-900">Total</span>
-        <span class="text-xl font-bold text-slate-900">{{ total | currency:'USD' }}</span>
-      </div>
-
-      <button
-        class="w-full mt-4 text-white font-bold py-3 px-4 rounded-lg transition
-               bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
-        [disabled]="noches === 0"
-        (click)="reservarAhora()"
-      >
-        Reservar ahora
-      </button>
-      <p class="text-sm text-slate-500" *ngIf="noches === 0">Selecciona fechas válidas para continuar.</p>
-    </section>
-
-    <!-- Localización -->
+<!-- Localización -->
 <section class="space-y-4" *ngIf="a.latitud != null && a.longitud != null; else noCoords">
   <h3 class="text-xl font-bold text-slate-900">Localización</h3>
 
-  <div class="map-wrapper">
-    <div #mapElement class="leaflet-map"></div>
+  <div class="rounded-lg overflow-hidden border h-64">
+    <iframe
+      class="w-full h-full"
+      [src]="googleMapUrl(a.latitud, a.longitud)"
+      style="border:0;"
+      loading="lazy"
+      referrerpolicy="no-referrer-when-downgrade">
+    </iframe>
   </div>
 
   <p class="text-sm text-slate-500">
@@ -155,125 +166,103 @@
 </ng-template>
 
 
-    <!-- Reseñas -->
-        <!-- Reseñas -->
+  <ng-template #noCoords>
     <section class="space-y-4">
-      <h3 class="text-xl font-bold text-slate-900">Reseñas</h3>
-
-      <div class="flex items-end gap-2">
-        <p class="text-4xl font-bold text-slate-900">
-          {{ a.calificacionPromedio != null ? (a.calificacionPromedio | number:'1.1-1') : '—' }}
-        </p>
-        <p class="text-slate-500">basado en {{ a.cantidadComentarios || 0 }} reseñas</p>
+      <h3 class="text-xl font-bold text-slate-900">Localización</h3>
+      <div class="rounded-lg overflow-hidden h-56 flex items-center justify-center border text-slate-500">
+        Este alojamiento aún no tiene coordenadas registradas.
       </div>
-
-      <div class="space-y-4 pt-2" *ngIf="a.comentarios?.length; else noReviews">
-        <article *ngFor="let c of a.comentarios; trackBy: trackById" class="p-4 border rounded-lg space-y-2">
-          <div class="flex items-center gap-3">
-            <img [src]="c.avatarUrl || 'assets/avatar.png'" alt="avatar" class="w-10 h-10 rounded-full object-cover">
-            <div>
-              <p class="font-semibold text-slate-900">{{ c.autor }}</p>
-              <p class="text-xs text-slate-500">{{ c.fecha || '' }}</p>
-            </div>
-          </div>
-          <div class="flex items-center gap-1">
-            <span class="material-symbols-outlined text-yellow-500 text-base"
-                  *ngFor="let _ of [].constructor(Math.round(c.calificacion || 0))">star</span>
-          </div>
-          <p class="text-slate-600">{{ c.texto }}</p>
-        </article>
-      </div>
-      <ng-template #noReviews>
-        <div class="text-slate-500">Aún no hay reseñas.</div>
-      </ng-template>
     </section>
+  </ng-template>
 
-    <!-- Comentar y calificar (solo usuarios logueados) -->
-    <section
-      class="space-y-4 p-4 border rounded-lg"
-      *ngIf="loggedIn$ | async"
-    >
-      <h3 class="text-xl font-bold text-slate-900">Comentar y calificar</h3>
 
-      <!-- Calificación -->
+      <!-- Reseñas -->
+          <!-- Reseñas -->
+      <section class="space-y-4">
+        <h3 class="text-xl font-bold text-slate-900">Reseñas</h3>
+
+        <div class="flex items-end gap-2">
+          <p class="text-4xl font-bold text-slate-900">
+            {{ a.calificacionPromedio != null ? (a.calificacionPromedio | number:'1.1-1') : '—' }}
+          </p>
+          <p class="text-slate-500">basado en {{ a.cantidadComentarios || 0 }} reseñas</p>
+        </div>
+
+        <div class="space-y-4 pt-2" *ngIf="a.comentarios?.length; else noReviews">
+          <article *ngFor="let c of a.comentarios; trackBy: trackById" class="p-4 border rounded-lg space-y-2">
+            <div class="flex items-center gap-3">
+              <img [src]="c.avatarUrl || 'assets/avatar.png'" alt="avatar" class="w-10 h-10 rounded-full object-cover">
+              <div>
+                <p class="font-semibold text-slate-900">{{ c.autor }}</p>
+                <p class="text-xs text-slate-500">{{ c.fecha || '' }}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-yellow-500 text-base"
+                    *ngFor="let _ of [].constructor(Math.round(c.calificacion || 0))">star</span>
+            </div>
+            <p class="text-slate-600">{{ c.texto }}</p>
+          </article>
+        </div>
+        <ng-template #noReviews>
+          <div class="text-slate-500">Aún no hay reseñas.</div>
+        </ng-template>
+      </section>
+
+      <!-- Comentar y calificar -->
+  <section class="space-y-4 p-4 border rounded-lg mt-4">
+    <h3 class="text-xl font-bold text-slate-900">Comentar y calificar</h3>
+
+    <ng-container *ngIf="reservaElegibleId; else noReservaParaComentar">
+      <!-- rating -->
       <div>
-        <label class="block text-sm font-medium text-slate-600 mb-2">
-          Tu calificación
-        </label>
+        <p class="text-sm text-slate-500 mb-1">Tu calificación</p>
         <div class="flex items-center gap-1">
           <button
+            *ngFor="let star of [1,2,3,4,5]"
             type="button"
-            *ngFor="let s of estrellas"
-            (click)="seleccionarEstrellas(s)"
-            class="text-3xl transition"
-          >
-            <span
-              class="material-symbols-outlined"
-              [ngClass]="{
-                'text-yellow-400': s <= nuevaCalificacion,
-                'text-slate-300': s > nuevaCalificacion
-              }"
-              style="font-variation-settings:'FILL' 1"
-            >
-              star
-            </span>
+            class="material-symbols-outlined text-2xl"
+            [ngClass]="star <= newRating ? 'text-yellow-500' : 'text-slate-300'"
+            (click)="newRating = star">
+            star
           </button>
         </div>
       </div>
 
-      <!-- Comentario -->
-      <div>
-        <label class="block text-sm font-medium text-slate-600 mb-2">
-          Tu comentario
-        </label>
+      <!-- comentario -->
+      <div class="mt-3">
+        <label class="block text-sm text-slate-500 mb-1">Tu comentario</label>
         <textarea
-          rows="4"
-          class="block w-full rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-slate-900"
-          [(ngModel)]="nuevoComentario"
-          placeholder="Escribe tu reseña aquí..."
-        ></textarea>
+          [(ngModel)]="newComment"
+          rows="3"
+          class="w-full border rounded-lg p-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        </textarea>
       </div>
 
-      <!-- Mensajes de error / éxito -->
-      <p *ngIf="errorComentario" class="text-sm text-red-600">
+      <button
+        class="w-full mt-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg
+              disabled:opacity-50 disabled:cursor-not-allowed"
+        [disabled]="enviandoComentario"
+        (click)="enviarComentario()">
+        {{ enviandoComentario ? 'Enviando...' : 'Enviar reseña' }}
+      </button>
+
+      <p *ngIf="errorComentario" class="text-sm text-red-500 mt-2">
         {{ errorComentario }}
       </p>
-      <p *ngIf="exitoComentario" class="text-sm text-emerald-700">
-        {{ exitoComentario }}
+    </ng-container>
+
+    <ng-template #noReservaParaComentar>
+      <p class="text-sm text-slate-500">
+        Solo puedes dejar una reseña si has completado una reserva en este alojamiento.
       </p>
+    </ng-template>
+  </section>
 
-      <!-- Botón enviar -->
-      <button
-        type="button"
-        class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg
-               disabled:opacity-50 disabled:cursor-not-allowed"
-        [disabled]="enviandoComentario || !nuevaCalificacion || !nuevoComentario.trim()"
-        (click)="enviarComentario()"
-      >
-        {{ enviandoComentario ? 'Enviando…' : 'Enviar reseña' }}
-      </button>
-    </section>
 
-    <!-- Si no está logueado -->
-    <section
-      class="space-y-2 p-4 border rounded-lg bg-slate-50"
-      *ngIf="!(loggedIn$ | async)"
-    >
-      <h3 class="text-xl font-bold text-slate-900">¿Quieres dejar una reseña?</h3>
-      <p class="text-sm text-slate-600">
-        Debes iniciar sesión y haber completado una reserva para poder calificar este alojamiento.
-      </p>
-      <button
-        class="inline-flex items-center gap-2 mt-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg"
-        (click)="back()"
-      >
-        Volver
-      </button>
-    </section>
+    </div>
+  </main>
 
-  </div>
-</main>
-
-<ng-template #cargandoTpl>
-  <div class="max-w-5xl mx-auto p-6 text-slate-500">Cargando…</div>
-</ng-template>
+  <ng-template #cargandoTpl>
+    <div class="max-w-5xl mx-auto p-6 text-slate-500">Cargando…</div>
+  </ng-template>

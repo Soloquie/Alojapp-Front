@@ -3,6 +3,9 @@ import { UsuarioService } from '../../../core/services/usuario.service';
 import { ReservasService } from '../../../core/services/reservas.service';
 import { Usuario } from '../../../core/models/usuario.models';
 import { Reserva } from '../../../core/models/reserva.models';
+import { AlojamientoService } from '../../../core/services/alojamiento.service';
+import { Router } from '@angular/router';
+import { forkJoin, map, of, switchMap } from 'rxjs';
 
 type Tab = 'proximas'|'pasadas'|'canceladas';
 
@@ -20,7 +23,7 @@ export class ProfileComponent implements OnInit {
   tab: Tab = 'proximas';
   today = new Date();
 
-  constructor(private usuarioSvc: UsuarioService, private reservasSvc: ReservasService) {}
+  constructor(private usuarioSvc: UsuarioService, private reservasSvc: ReservasService,private router: Router, private alojamientoSrvc: AlojamientoService) {}
 
   ngOnInit(): void {
     this.cargarPerfil();
@@ -36,12 +39,50 @@ export class ProfileComponent implements OnInit {
   }
 
   private cargarReservas() {
-    this.loadingRes = true;
-    this.reservasSvc.listarMias().subscribe({
-      next: rs => { this.reservas = rs; this.loadingRes = false; },
-      error: _ => { this.loadingRes = false; }
-    });
-  }
+  this.loadingRes = true;
+
+  this.reservasSvc.listarMias().pipe(
+    switchMap(rs => {
+      this.reservas = rs;
+
+      const ids = Array.from(new Set(
+        rs.map(r => r.alojamientoId).filter(id => !!id)
+      ));
+
+      if (!ids.length) {
+        return of([] as { id: number; portada: string | null }[]);
+      }
+
+      return forkJoin(
+        ids.map(id =>
+          this.alojamientoSrvc.getById(id).pipe(   
+            map(aloj => ({
+              id,
+              portada:
+                aloj.portadaUrl ||
+                aloj.imagenes?.[0] ||
+                null
+            }))
+          )
+        )
+      );
+    })
+  ).subscribe({
+    next: mapas => {
+      mapas.forEach(({ id, portada }) => {
+        this.reservas
+          .filter(r => r.alojamientoId === id)
+          .forEach(r => (r.alojamientoImagen = portada));
+      });
+      this.loadingRes = false;
+    },
+    error: _ => {
+      this.loadingRes = false;
+    }
+  });
+}
+
+
 
   setTab(t: Tab) { this.tab = t; }
 
@@ -53,8 +94,6 @@ export class ProfileComponent implements OnInit {
       const estado = (r.estado || '').toUpperCase();
 
       if (this.tab === 'canceladas') return estado === 'CANCELADA';
-
-      // Próximas: no canceladas y check-in >= hoy
       if (this.tab === 'proximas') {
         if (estado === 'CANCELADA') return false;
         if (ci) {
@@ -64,8 +103,6 @@ export class ProfileComponent implements OnInit {
         }
         return false;
       }
-
-      // Pasadas: COMPLETADA, o checkout < hoy
       if (this.tab === 'pasadas') {
         if (estado === 'COMPLETADA') return true;
         if (co) {
@@ -80,10 +117,18 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  // helpers UI
   rangoFechas(r: Reserva) {
     const f = (s?: string) => s ? new Date(s).toLocaleDateString() : '—';
     return `${f(r.fechaCheckin)} - ${f(r.fechaCheckout)}`;
+  }
+
+    back(): void {
+    this.router.navigate(['/home']);
+  }
+
+  abrirReserva(r: Reserva) {
+    if (!r.id) return;
+    this.router.navigate(['/perfil/reservas', r.id]);
   }
 
   avatar(): string {

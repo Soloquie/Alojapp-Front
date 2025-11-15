@@ -1,4 +1,3 @@
-// src/app/core/services/auth.service.ts
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -55,7 +54,6 @@ export class AuthService {
           const body = res.body;
           let token = body?.token;
 
-          // fallback por si el backend lo manda en el header
           if (!token) {
             const authHeader = res.headers.get('Authorization') || res.headers.get('authorization');
             token = authHeader?.replace(/^Bearer\s+/i, '');

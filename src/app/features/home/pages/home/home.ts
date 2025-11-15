@@ -1,4 +1,3 @@
-// src/app/features/home/pages/home/home.ts
 import { Component, OnInit } from '@angular/core';
 import { Observable, startWith, map, take } from 'rxjs';
 import { Router } from '@angular/router';
@@ -39,7 +38,6 @@ export class HomeComponent implements OnInit {
       return f;
     }
 
-    // desde el formulario grande
     if (this.ciudad?.trim()) f.ciudad = this.ciudad.trim();
     if (this.checkin) f.checkin = this.checkin;
     if (this.checkout) f.checkout = this.checkout;
@@ -51,9 +49,8 @@ export class HomeComponent implements OnInit {
     private goToSearch(from: 'header' | 'form'): void {
     const filtros = this.buildFilters(from);
 
-    // creamos la URL destino (/buscar?... )
     const tree = this.router.createUrlTree(['/buscar'], { queryParams: filtros });
-    const targetUrl = tree.toString();   // ej: /buscar?ciudad=Armenia&huespedes=2
+    const targetUrl = tree.toString();   
 
     this.auth.loggedIn$.pipe(take(1)).subscribe(isLogged => {
       if (!isLogged) {
@@ -62,8 +59,6 @@ export class HomeComponent implements OnInit {
         });
         return;
       }
-
-      // si ya está logueado, vamos directo a /buscar
       this.router.navigateByUrl(targetUrl);
     });
   }

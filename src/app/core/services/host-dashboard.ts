@@ -1,4 +1,3 @@
-// src/app/core/services/host-dashboard.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { forkJoin, map, Observable, of, switchMap, catchError } from 'rxjs';
@@ -80,7 +79,7 @@ export class HostDashboardService {
 
     listar(): Observable<ServicioDTO[]> {
     return this.http.get<ServicioDTO[]>(`${this.base}/servicios`).pipe(
-      catchError(() => of([])) // tolerante si fallara
+      catchError(() => of([])) 
     );
   }
 
@@ -91,21 +90,20 @@ getAnfitrionId(): Observable<number | null> {
 
     catchError(() => this.http.get<any>(`${this.base}/usuarios/me`).pipe(
       switchMap(u => {
-        console.log('[ME]', u); // <-- para que veas qué trae realmente
+        console.log('[ME]', u); 
         const directo = u?.anfitrionId ?? u?.perfilAnfitrionId ?? u?.anfitrion?.id ?? null;
         if (directo) return of(directo);
 
         const userId = u?.id ?? u?.usuarioId;
         if (!userId) return of(null);
 
-        // intenta varias rutas conocidas
         return this.http.get<any>(`${this.base}/anfitriones/by-usuario/${userId}`).pipe(
           map(r => r?.id ?? r?.anfitrionId ?? null),
           catchError(() =>
             this.http.get<any>(`${this.base}/anfitriones/usuario/${userId}`).pipe(
               map(r => r?.id ?? r?.anfitrionId ?? null),
               catchError(() =>
-                this.http.get<any>(`${this.base}/anfitriones/por-usuario/${userId}`).pipe( // por si tuvieras esta
+                this.http.get<any>(`${this.base}/anfitriones/por-usuario/${userId}`).pipe( 
                   map(r => r?.id ?? r?.anfitrionId ?? null),
                   catchError(() => of(null))
                 )
@@ -119,7 +117,6 @@ getAnfitrionId(): Observable<number | null> {
 }
 
 
-  // --- Alojamientos del anfitrión (desenvolviendo `contenido`)
   alojamientos(anfitrionId: number, pagina = 0, tamano = 12): Observable<AlojCard[]> {
     const params = new HttpParams().set('pagina', pagina).set('tamano', tamano);
 
@@ -131,7 +128,6 @@ getAnfitrionId(): Observable<number | null> {
       );
   }
 
-  // --- Reservas del anfitrión (endpoint que sí tienes)
   reservas(anfitrionId: number, pagina = 0, tamano = 100): Observable<ReservaItem[]> {
     const params = new HttpParams()
       .set('anfitrionId', anfitrionId)

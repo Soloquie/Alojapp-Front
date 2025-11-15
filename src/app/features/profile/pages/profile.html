@@ -1,7 +1,7 @@
 <div class="container">
-  <header class="top">
-    <h1>Perfil</h1>
-  </header>
+    <button class="text-sm text-slate-600 hover:text-slate-900" (click)="back()">
+        <span class="material-symbols-outlined text-2xl">arrow_back</span>
+    </button>
 
   <!-- Tarjeta principal -->
   <section class="card center">
@@ -33,29 +33,24 @@
     <div *ngIf="!loadingRes && filtradas.length === 0" class="empty">No hay reservas para mostrar.</div>
 
     <div class="list">
-      <article class="item" *ngFor="let r of filtradas">
-        <img class="thumb" [src]="r.alojamientoImagen || 'assets/placeholder.jpg'" alt="Alojamiento" />
-        <div class="grow">
-          <h4>{{ r.alojamientoTitulo }}</h4>
-          <p class="muted">{{ rangoFechas(r) }}</p>
-        </div>
-        <span class="state" [attr.data-state]="r.estado">{{ r.estado }}</span>
-      </article>
+  <article class="item" *ngFor="let r of filtradas" (click)="abrirReserva(r)">
+    <img class="thumb" [src]="r.alojamientoImagen || 'assets/placeholder.jpg'" alt="Alojamiento" />
+    <div class="grow">
+      <h4>{{ r.alojamientoTitulo }}</h4>
+      <p class="muted">{{ rangoFechas(r) }}</p>
     </div>
+    <span class="state" [attr.data-state]="r.estado">{{ r.estado }}</span>
+  </article>
+</div>
+
   </section>
 
   <!-- Ajustes -->
   <section>
     <h3>Ajustes</h3>
     <div class="card list">
-      <a class="row" routerLink="/perfil/notificaciones">
-        <div>🔔 Notificaciones</div><span>›</span>
-      </a>
-      <a class="row" routerLink="/perfil/seguridad">
-        <div>🛡️ Seguridad</div><span>›</span>
-      </a>
-      <a class="row" routerLink="/soporte">
-        <div>🧑‍💻 Soporte</div><span>›</span>
+      <a class="row" routerLink="/perfil/editar">
+        <div>✏️ Editar perfil</div><span>›</span>
       </a>
     </div>
   </section>

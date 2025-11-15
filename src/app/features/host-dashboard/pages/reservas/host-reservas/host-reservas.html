@@ -1,0 +1,148 @@
+<div class="min-h-screen flex flex-col bg-slate-50">
+
+  <!-- HEADER -->
+  <header
+    class="sticky top-0 z-10 flex items-center justify-between px-4 py-4 bg-white/80 backdrop-blur-sm border-b">
+    <button class="p-2 rounded-full hover:bg-slate-100" (click)="back()">
+      <span class="material-symbols-outlined">arrow_back</span>
+    </button>
+    <h1 class="text-xl font-bold text-slate-900">Mis reservaciones</h1>
+    <div class="w-10 h-10"></div>
+  </header>
+
+  <main class="flex-grow p-4 md:p-6 lg:p-8">
+    <div class="max-w-7xl mx-auto">
+
+      <p *ngIf="error" class="mb-4 text-red-600">{{ error }}</p>
+
+      <!-- Título + filtro -->
+      <div class="mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <h2 class="text-2xl font-bold text-slate-900">Todas las reservaciones</h2>
+
+        <div class="relative w-full sm:w-auto">
+          <span
+            class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+            filter_list
+          </span>
+          <select
+            class="w-full sm:w-64 pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
+            [ngModel]="filtroEstado"
+            (ngModelChange)="onEstadoChange($event)">
+            <option value="">Filtrar por estado</option>
+            <option value="CONFIRMADA">Confirmado</option>
+            <option value="PENDIENTE">Pendiente</option>
+            <option value="CANCELADA">Cancelado</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Tabla -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+
+        <ng-container *ngIf="!cargando; else loadingTpl">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead class="bg-slate-50">
+                <tr>
+                  <th class="px-6 py-4 font-semibold text-xs text-slate-500 uppercase tracking-wider">
+                    Alojamiento
+                  </th>
+                  <th class="px-6 py-4 font-semibold text-xs text-slate-500 uppercase tracking-wider">
+                    Huésped
+                  </th>
+                  <th class="px-6 py-4 font-semibold text-xs text-slate-500 uppercase tracking-wider">
+                    Fechas
+                  </th>
+                  <th class="px-6 py-4 font-semibold text-xs text-slate-500 uppercase tracking-wider">
+                    Precio total
+                  </th>
+                  <th
+                    class="px-6 py-4 font-semibold text-xs text-slate-500 uppercase tracking-wider text-center">
+                    Estado
+                  </th>
+                  <th
+                    class="px-6 py-4 font-semibold text-xs text-slate-500 uppercase tracking-wider text-right">
+                    Acciones
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody class="divide-y divide-slate-100" *ngIf="reservas.length; else noResvTpl">
+                <tr *ngFor="let r of reservas">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="font-medium text-slate-900">{{ r.alojamientoTitulo }}</div>
+                    <div class="text-sm text-slate-500">
+                      {{ r.alojamientoCiudad || '—' }}
+                    </div>
+                  </td>
+
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    {{ r.huespedNombre }}
+                  </td>
+
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700">
+                    <ng-container *ngIf="r.fechaCheckin && r.fechaCheckout; else fechasRawTpl">
+                      {{ r.fechaCheckin | date:'dd MMM' }} -
+                      {{ r.fechaCheckout | date:'dd MMM, yyyy' }}
+                    </ng-container>
+                    <ng-template #fechasRawTpl>
+                      {{ r.fechaCheckin }} - {{ r.fechaCheckout }}
+                    </ng-template>
+                  </td>
+
+                  <td class="px-6 py-4 whitespace-nowrap font-medium text-slate-900">
+                    {{ r.precioTotal | currency:'USD' }}
+                  </td>
+
+                  <td class="px-6 py-4 whitespace-nowrap text-center">
+                    <span
+                      class="text-xs font-semibold px-2.5 py-1 rounded-full"
+                      [ngClass]="estadoBadgeClase(r.estado)">
+                      {{ r.estado }}
+                    </span>
+                  </td>
+
+                  <td class="px-6 py-4 whitespace-nowrap text-right">
+                    <div class="flex items-center justify-end space-x-2">
+                      <button
+                        class="p-2 rounded-full hover:bg-slate-100 transition-colors"
+                        title="Ver detalles"
+                        (click)="verDetalle(r.id)">
+                        <span class="material-symbols-outlined text-slate-500">visibility</span>
+                      </button>
+                      <button
+                        class="p-2 rounded-full hover:bg-slate-100 transition-colors"
+                        title="Contactar huésped"
+                        (click)="contactarHuesped(r.id)">
+                        <span class="material-symbols-outlined text-slate-500">chat</span>
+                      </button>
+                      <button
+                        class="p-2 rounded-full hover:bg-slate-100 transition-colors"
+                        title="Modificar reserva"
+                        (click)="modificarReserva(r.id)">
+                        <span class="material-symbols-outlined text-slate-500">edit</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<ng-template #loadingTpl>
+  <div class="p-8 text-slate-500">Cargando reservaciones…</div>
+</ng-template>
+
+<ng-template #noResvTpl>
+  <tr>
+    <td colspan="6" class="px-6 py-8 text-center text-slate-500">
+      No hay reservaciones para tus alojamientos.
+    </td>
+  </tr>
+</ng-template>

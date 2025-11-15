@@ -8,7 +8,9 @@ export interface Reserva {
   estado: EstadoReserva;
   fechaCheckin: string;   // ISO
   fechaCheckout: string;  // ISO
-  // datos del alojamiento (según tu DTO; mapeamos defensivamente)
   alojamientoTitulo?: string;
   alojamientoImagen?: string | null;
+
+  alojamientoId: number;
+
 }

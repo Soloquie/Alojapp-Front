@@ -1,4 +1,3 @@
-// src/app/features/host-dashboard/pages/create-listing/create-listing.component.ts
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ServiciosService, ServicioDTO } from '../../../../core/services/servicios';
@@ -43,7 +42,6 @@ export class CreateListingComponent implements OnInit, AfterViewInit {
   this.marker = L.marker([lat, lng], { draggable: true }).addTo(this.map);
   this.map.setView([lat, lng], 13);
 
-  // Click en el mapa → mover marcador y actualizar form
   this.map.on('click', (e: L.LeafletMouseEvent) => {
     const { lat, lng } = e.latlng;
     this.updateMarker(lat, lng);
@@ -56,10 +54,9 @@ export class CreateListingComponent implements OnInit, AfterViewInit {
     this.form.patchValue({ latitud: pos.lat, longitud: pos.lng });
   });
 
-  // 👇 Importante: forzar a que recalculen el tamaño real del div
   setTimeout(() => {
     this.map?.invalidateSize();
-    this.map?.setView([lat, lng], 13); // re-centra ya con tamaño correcto
+    this.map?.setView([lat, lng], 13); 
   }, 200);
 }
 
@@ -132,7 +129,6 @@ export class CreateListingComponent implements OnInit, AfterViewInit {
     serviciosIds: Array.isArray(v.serviciosIds) ? v.serviciosIds : []
   };
 
-  // Validación mínima adicional (opcional)
   if (!payload.titulo || !payload.descripcion || !payload.ciudad || !payload.direccion) {
     this.error = 'Completa los campos obligatorios.';
     return;
@@ -151,15 +147,11 @@ export class CreateListingComponent implements OnInit, AfterViewInit {
       this.hostSrv.crearAlojamiento(anfitrionId, payload, files).subscribe({
         next: (res) => {
           this.publicando = false;
-
-          // Éxito: limpia y navega (ajusta ruta)
           this.form.reset();
           this.files = [];
         },
         error: (e) => {
           this.publicando = false;
-
-          // Intenta leer mensaje de backend
           const msg =
             e?.error?.message ||
             e?.error?.detalle ||
@@ -200,11 +192,8 @@ export class CreateListingComponent implements OnInit, AfterViewInit {
           // limpiamos inputs
           nombreCtrl?.reset('');
           descCtrl?.reset('');
-
           // recargar lista de servicios
           this.servicios$ = this.srvServicios.getAll$();
-
-          // y lo seleccionamos automáticamente
           const actuales: number[] = this.form.get('serviciosIds')?.value ?? [];
           this.form.patchValue({ serviciosIds: [...actuales, serv.id] });
         },

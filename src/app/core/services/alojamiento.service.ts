@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
-import { environment } from '../../../environments/environments'; // ajusta si tu ruta es distinta
+import { environment } from '../../../environments/environments';
 
 export interface AlojamientoCard {
   id: number;
@@ -14,6 +14,18 @@ export interface AlojamientoCard {
   portadaUrl?: string | null;
 }
 
+export interface ActualizarAlojamientoPayload {
+  titulo: string;
+  descripcion: string;
+  ciudad: string;
+  direccion: string;
+  precioNoche: number;
+  capacidadMaxima: number;
+  serviciosIds?: number[];
+}
+
+
+
 export interface AlojamientoDetail {
   id: number;
   titulo: string;
@@ -22,7 +34,6 @@ export interface AlojamientoDetail {
   pais?: string;
   precioNoche?: number;
   capacidad?: number;
-  // Ajusta a tu DTO real:
   anfitrionId?: number;
   anfitrionNombre?: string;
   anfitrionFotoUrl?: string;
@@ -42,6 +53,12 @@ export interface CrearComentarioPayload {
   comentarioTexto: string;
 }
 
+export interface ServicioAlojamientoDTO {
+  id: number;
+  nombre: string;
+  descripcion?: string;
+  iconoUrl?: string;
+}
 export interface SearchFilters {
   q?: string;
   ciudad?: string;
@@ -81,6 +98,19 @@ export class AlojamientoService {
       null
   });
 
+updateMiAlojamiento(id: number, body: ActualizarAlojamientoPayload) {
+  return this.http.put<AlojamientoDetalle>(
+    `${this.base}/anfitrion/mis-alojamientos/${id}`,
+    body
+  );
+}
+
+
+listarServicios(): Observable<ServicioAlojamientoDTO[]> {
+  return this.http.get<ServicioAlojamientoDTO[]>(`${this.base}/servicios`);
+}
+
+
   /** Populares (ajusta la URL si en tu API es diferente) */
   getPopulares(limit = 12): Observable<AlojamientoCard[]> {
     const params = new HttpParams().set('limit', limit);
@@ -91,8 +121,18 @@ export class AlojamientoService {
     );
   }
 
-   getById(id: number): Observable<AlojamientoDetail> {
-    return this.http.get<AlojamientoDetail>(`${this.base}/alojamientos/${id}`);
+  reemplazarImagenPrincipal(alojamientoId: number, file: File) {
+  const formData = new FormData();
+  formData.append('files', file);         
+  return this.http.put<ImagenDTO[]>(
+    `${this.base}/imagenes/alojamiento/${alojamientoId}/reemplazar`,
+    formData
+  );
+}
+
+
+   getById(id: number): Observable<AlojamientoDetalle> {
+    return this.http.get<AlojamientoDetalle>(`${this.base}/alojamientos/${id}`);
   }
 
   getImagenes(id: number): Observable<ImagenDTO[]> {
@@ -131,24 +171,26 @@ private toDetalle = (it: any): AlojamientoDetalle => ({
     it.imagenPrincipalUrl ??
     it.imagenPortada ??
     it.coverUrl ??
-    it.imagenes?.[0] ??
+    (Array.isArray(it.imagenes) ? it.imagenes[0] : null) ??
     null,
 
-  imagenes: it.imagenes ?? it.fotos ?? it.galeria ?? [],
+  imagenes: Array.isArray(it.imagenes) ? it.imagenes : (it.fotos ?? it.galeria ?? []),
 
+  // 🔹 AQUÍ: normalizamos el anfitrión usando los campos planos que te devuelve el back
   anfitrion: {
-    id: it.anfitrion?.id ?? it.hostId,
-    nombre: it.anfitrion?.nombre ?? it.hostNombre,
-    fotoUrl: it.anfitrion?.fotoUrl ?? it.hostFotoUrl ?? null,
+    id: it.anfitrion?.id ?? it.anfitrionId ?? it.hostId,
+    nombre: it.anfitrion?.nombre ?? it.anfitrionNombre ?? it.hostNombre,
+    fotoUrl: it.anfitrion?.fotoUrl ?? it.anfitrionFotoUrl ?? it.hostFotoUrl ?? null,
     respuestaRapida: it.anfitrion?.respuestaRapida ?? it.hostRespuestaRapida ?? false
   },
 
   servicios: Array.isArray(it.servicios)
-    ? it.servicios
+    ? it.servicios.map((s: any) => typeof s === 'string' ? s : (s?.nombre ?? 'Servicio'))
     : (it.amenities?.map((a: any) => a.nombre) ?? []),
 
   politicas: it.politicas ?? []
 });
+
 
 
   /** Búsqueda con filtros */

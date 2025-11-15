@@ -21,14 +21,12 @@ export class LoginComponent {
     private auth: AuthService,
     private router: Router
   ) {
-    // inicializa aquí para evitar “fb se usa antes de su inicialización”
     this.form = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required],
     });
   }
 
-  // getters para evitar “as any” en la plantilla
   get emailCtrl(): FormControl { return this.form.get('email') as FormControl; }
   get passwordCtrl(): FormControl { return this.form.get('password') as FormControl; }
 

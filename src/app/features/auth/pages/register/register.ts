@@ -5,7 +5,6 @@ import { AuthService } from '../../../../core/services/auth.service';
 import { RegistroUsuarioRequest } from '../../../../core/models/auth.models';
 import { HttpErrorResponse } from '@angular/common/http';
 
-// Validador: edad mínima (>= minYears)
 function minAgeValidator(minYears: number): ValidatorFn {
   return (control: AbstractControl) => {
     const v = control.value;
@@ -53,7 +52,6 @@ export class RegisterComponent {
     });
   }
 
-  // Getters usados en el HTML
   get nombreCtrl(): FormControl { return this.form.get('nombre') as FormControl; }
   get emailCtrl(): FormControl { return this.form.get('email') as FormControl; }
   get passwordCtrl(): FormControl { return this.form.get('password') as FormControl; }
@@ -72,7 +70,7 @@ export class RegisterComponent {
 private toIsoDate(d: any): string {
   if (!d) return '';
   if (typeof d === 'string') {
-    if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;            // ya viene yyyy-MM-dd
+    if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;            
     const m = d.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);        // dd/MM/yyyy
     if (m) return `${m[3]}-${m[2]}-${m[1]}`;
   }
@@ -95,13 +93,12 @@ private toIsoDate(d: any): string {
   };
 
   const obs = this.selectedFile
-    ? this.auth.registerMultipart(req, this.selectedFile)   // ahora devuelve HttpResponse
+    ? this.auth.registerMultipart(req, this.selectedFile)   
     : this.auth.register(req);
 
   obs.subscribe({
     next: (res) => {
       this.loading = false;
-      // 200 OK o 201 Created: consideramos éxito aunque el body venga vacío
       if (res.status === 200 || res.status === 201) {
         this.router.navigate(['/auth/login'], { queryParams: { registered: 1 }});
       } else {

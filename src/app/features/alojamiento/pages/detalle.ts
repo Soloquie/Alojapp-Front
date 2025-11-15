@@ -1,7 +1,6 @@
-import { Component, OnInit, inject, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
-import * as L from 'leaflet';
 
 import {
   AlojamientoService,
@@ -12,6 +11,10 @@ import { ReservasService } from '../../../core/services/reservas.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { take } from 'rxjs/operators';
 import { Observable } from 'rxjs';
+import { ComentariosService } from '../../../core/services/comentarios';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+
+
 
 type ComentarioVM = {
   id: number;
@@ -35,7 +38,6 @@ type AlojamientoVM = AlojamientoDTO & {
   imagenPrincipalUrl?: string | null;
   portadaUrl?: string | null;
   imagenes?: string[];
-  host?: HostVM;
   servicios?: string[];
   comentarios?: ComentarioVM[];
   longitud?: number | null;
@@ -44,22 +46,20 @@ type AlojamientoVM = AlojamientoDTO & {
   cantidadComentarios?: number | null;
 };
 
+
 @Component({
   selector: 'app-detalle-alojamiento',
   templateUrl: './detalle.html',
   styleUrls: ['./detalle.scss'],
   standalone: false
 })
-export class DetalleAlojamientoComponent implements OnInit, AfterViewInit  {
+export class DetalleAlojamientoComponent implements OnInit  {
   private readonly route = inject(ActivatedRoute);
 
 loggedIn$!: Observable<boolean>;
   
-@ViewChild('mapElement') mapElement?: ElementRef<HTMLDivElement>;
 
-private map?: L.Map;
-private marker?: L.Marker;
-private mapPendingInit = false;
+
 
   estrellas = [1, 2, 3, 4, 5];
   nuevaCalificacion = 0;
@@ -67,58 +67,12 @@ private mapPendingInit = false;
   enviandoComentario = false;
   errorComentario?: string;
   exitoComentario?: string;
+  reservaElegibleId?: number;
+  newRating = 0;
+  newComment = '';
 
 
-ngAfterViewInit(): void {
-  // Si el alojamiento ya está cargado cuando se pinta la vista, inicializamos aquí
-  if (this.aloj && this.mapElement) {
-    this.initMap();
-  }
-}
 
-private tryInitMap(): void {
-  // Solo queremos inicializar si se ha pedido
-  if (!this.mapPendingInit) return;
-  if (!this.aloj) return;
-  if (this.aloj.latitud == null || this.aloj.longitud == null) return;
-  if (!this.mapElement) return;
-
-  // ya tenemos todo
-  this.mapPendingInit = false;
-  this.initMap();
-}
-
-private initMap(): void {
-  if (!this.mapElement || !this.aloj) return;
-
-  const lat = this.aloj?.latitud ?? 4.53389;   // default Armenia
-  const lng = this.aloj?.longitud ?? -75.68111;
-
-  if (!this.map) {
-    this.map = L.map(this.mapElement.nativeElement, {
-      center: [lat, lng],
-      zoom: 13
-    });
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap'
-    }).addTo(this.map);
-
-    this.marker = L.marker([lat, lng]).addTo(this.map);
-  } else {
-    this.map.setView([lat, lng], this.map.getZoom());
-    this.marker?.setLatLng([lat, lng]);
-  }
-
-  // Muy importante para evitar el mapa “recortado”
-  setTimeout(() => {
-    this.map?.invalidateSize();
-  }, 200);
-
-  this.tryInitMap();
-
-}
 
 
   constructor(
@@ -126,7 +80,9 @@ private initMap(): void {
     private reservasSrv: ReservasService,
     private auth: AuthService,
     private router: Router,
-    private location: Location
+    private location: Location,
+    private comentariosSrv: ComentariosService,
+    private sanitizer: DomSanitizer           
   ) {}
   readonly Math = Math;
 
@@ -144,7 +100,6 @@ private initMap(): void {
   readonly feeLimpieza = 25;
   readonly feePlataforma = 15;
 
-  // Fees (ajústalos si tu backend los calcula distinto)
   cleaningFee = 25;
   platformFee = 15;
 
@@ -163,7 +118,7 @@ private initMap(): void {
   get total(): number {
     return this.subtotal + this.cleaningFee + this.platformFee;
   }
-  recalc(): void {/* Getters se recalculan solos; esto sólo triggea change detection */}
+  recalc(): void {}
 
   ngOnInit(): void {
     this.loggedIn$ = this.auth.loggedIn$;
@@ -174,37 +129,38 @@ private initMap(): void {
       this.cargando = true;
       this.alojSrv.getDetalle(id).subscribe({
         next: (dto) => {
-          const d: any = dto;
+  const d: any = dto;
 
-          this.aloj = {
-            ...dto,
-            imagenPrincipalUrl: d.imagenPrincipalUrl ?? d.portadaUrl ?? null,
-            portadaUrl: d.portadaUrl ?? d.imagenPrincipalUrl ?? null,
-            imagenes: Array.isArray(d.imagenes) ? d.imagenes : [],
-            host: {
-              id: d.anfitrionId ?? d.hostId ?? undefined,
-              nombre: d.anfitrionNombre ?? d.hostNombre ?? 'Anfitrión',
-              avatarUrl: d.anfitrionFotoUrl ?? d.hostFotoUrl ?? null,
-              respuestaRapida: d.hostRespuestaRapida ?? false
-            },
-            servicios: Array.isArray(d.servicios)
-              ? d.servicios.map((s: any) => typeof s === 'string' ? s : (s?.nombre ?? 'Servicio'))
-              : [],
-            comentarios: Array.isArray(d.comentarios) ? d.comentarios.map((c: any) => ({
-              id: c.id ?? 0,
-              autor: c.autorNombre ?? c.autor ?? 'Usuario',
-              avatarUrl: c.autorFotoUrl ?? null,
-              calificacion: Number(c.calificacion ?? c.rating ?? 0),
-              texto: c.comentario ?? c.texto ?? '',
-              fecha: c.fechaCreacion
-            })) : [],
-            calificacionPromedio: d.calificacionPromedio ?? d.rating ?? null,
-            cantidadComentarios: d.cantidadComentarios ?? d.totalResenas ?? 0
-          };
+  this.aloj = {
+    ...dto,
+    imagenPrincipalUrl: d.imagenPrincipalUrl ?? d.portadaUrl ?? null,
+    portadaUrl: d.portadaUrl ?? d.imagenPrincipalUrl ?? null,
+    imagenes: Array.isArray(d.imagenes) ? d.imagenes : [],
+    servicios: Array.isArray(d.servicios)
+      ? d.servicios.map((s: any) => typeof s === 'string' ? s : (s?.nombre ?? 'Servicio'))
+      : [],
+    comentarios: Array.isArray(d.comentarios)
+      ? d.comentarios.map((c: any) => ({
+          id: c.id ?? c.comentarioId ?? 0,
+          autor: c.autorNombre ?? c.usuarioNombre ?? c.autor ?? 'Usuario',
+          avatarUrl: c.autorFotoUrl ?? c.usuarioFotoUrl ?? null,
+          calificacion: Number(c.calificacion ?? c.rating ?? 0),
+          texto: c.comentarioTexto ?? c.comentario ?? c.texto ?? '',
+          fecha: c.fechaComentario ?? c.fechaCreacion ?? c.fecha ?? null
+        }))
+      : [],
+    calificacionPromedio: d.calificacionPromedio ?? d.rating ?? null,
+    cantidadComentarios: d.cantidadComentarios ?? d.totalResenas ?? 0
+  };
 
-          this.cargando = false;
-this.mapPendingInit = true;
-this.tryInitMap();        },
+  this.cargando = false;
+
+  if (this.aloj?.id) {
+    this.cargarReservaElegible(this.aloj.id);
+    this.cargarComentarios(this.aloj.id);
+  }
+},
+
         error: () => {
           this.error = 'No se pudo cargar el alojamiento.';
           this.cargando = false;
@@ -213,7 +169,27 @@ this.tryInitMap();        },
     });
   }
 
-  // Ícono material para cada servicio (string)
+  private cargarReservaElegible(alojamientoId: number): void {
+  this.auth.loggedIn$.pipe(take(1)).subscribe(isLogged => {
+    if (!isLogged) return;
+
+    this.reservasSrv.getReservaCompletadaParaAlojamiento(alojamientoId)
+      .pipe(take(1))
+      .subscribe(reserva => {
+        this.reservaElegibleId = reserva?.id;
+      });
+  });
+}
+
+
+googleMapUrl(lat?: number | null, lng?: number | null): SafeResourceUrl {
+  const latV = lat ?? 0;
+  const lngV = lng ?? 0;
+  const url = `https://www.google.com/maps?q=${latV},${lngV}&z=15&output=embed`;
+  return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+}
+
+
   iconFor(raw?: string): string {
     const s = (raw || '').toLowerCase();
     if (s.includes('cocina')) return 'kitchen';
@@ -231,90 +207,93 @@ this.tryInitMap();        },
   }
 
   enviarComentario(): void {
-    this.errorComentario = undefined;
-    this.exitoComentario = undefined;
+  this.errorComentario = undefined;
 
-    if (!this.aloj?.id) {
-      this.errorComentario = 'Alojamiento inválido.';
-      return;
-    }
+  if (!this.reservaElegibleId) {
+    this.errorComentario = 'Necesitas una reserva completada para comentar este alojamiento.';
+    return;
+  }
 
-    if (this.nuevaCalificacion < 1 || this.nuevaCalificacion > 5) {
-      this.errorComentario = 'Selecciona una calificación entre 1 y 5 estrellas.';
-      return;
-    }
+  const rating = this.newRating;
+  const texto = this.newComment.trim();
 
-    if (!this.nuevoComentario.trim()) {
-      this.errorComentario = 'Escribe un comentario.';
-      return;
-    }
+  if (rating < 1 || rating > 5) {
+    this.errorComentario = 'Selecciona una calificación entre 1 y 5 estrellas.';
+    return;
+  }
+  if (!texto) {
+    this.errorComentario = 'Escribe un comentario.';
+    return;
+  }
 
-    this.auth.loggedIn$.pipe(take(1)).subscribe(isLogged => {
-      if (!isLogged) {
-        // Igual que en reservarAhora: redirigir a login
-        const redirect = encodeURIComponent(this.router.url);
-        this.router.navigate(['/auth/login'], { queryParams: { redirect } });
-        return;
-      }
+  const payload = {
+    reservaId: this.reservaElegibleId,
+    calificacion: rating,
+    comentarioTexto: texto
+  };
 
-      this.enviandoComentario = true;
+  this.enviandoComentario = true;
 
-      // ⚠️ TODO: AJUSTA ESTE PAYLOAD A TU CrearComentarioRequest REAL ⚠️
-      const payload = {
-        // si tu backend usa reservaId, ponlo aquí
-        // reservaId: ???,
+  this.comentariosSrv.crear(payload).pipe(take(1)).subscribe({
+    next: (dto) => {
+      this.enviandoComentario = false;
 
-        // si tu backend admite alojamientoId directamente:
-        alojamientoId: this.aloj!.id as any,
-
-        calificacion: this.nuevaCalificacion,
-        comentario: this.nuevoComentario.trim()
+      const nuevo: ComentarioVM = {
+        id: dto.id ?? 0,
+        autor: dto.autorNombre ?? 'Tú',
+        avatarUrl: dto.autorFotoUrl ?? null,
+        calificacion: dto.calificacion ?? rating,
+        texto: dto.comentarioTexto ?? texto,
+        fecha: dto.fechaCreacion ?? new Date(),
       };
 
-      this.alojSrv.crearComentario(payload as any).pipe(take(1)).subscribe({
-        next: (resp) => {
-          this.enviandoComentario = false;
-          this.exitoComentario = '¡Gracias por tu reseña!';
+      this.aloj!.comentarios = [nuevo, ...(this.aloj!.comentarios || [])];
+      this.aloj!.cantidadComentarios = (this.aloj!.cantidadComentarios ?? 0) + 1;
+      if (dto.promedioAlojamiento != null) {
+        this.aloj!.calificacionPromedio = dto.promedioAlojamiento;
+      }
 
-          // Mapear la respuesta a tu ComentarioVM para añadirlo a la lista
-          const nuevoVM: ComentarioVM = {
-            id: resp.id ?? 0,
-            autor: resp.autorNombre ?? 'Tú',
-            avatarUrl: null,
-            calificacion: Number(resp.calificacion ?? this.nuevaCalificacion),
-            texto: resp.comentario ?? this.nuevoComentario.trim(),
-            fecha: resp.fechaCreacion ?? new Date().toISOString().substring(0, 10)
-          };
+      this.newRating = 0;
+      this.newComment = '';
+    },
+    error: (err) => {
+      this.enviandoComentario = false;
+      this.errorComentario = err?.error?.message || 'No se pudo enviar el comentario.';
+    }
+  });
+}
 
-          if (!this.aloj!.comentarios) {
-            this.aloj!.comentarios = [];
-          }
-          this.aloj!.comentarios.unshift(nuevoVM);
+private cargarComentarios(alojamientoId: number): void {
+  this.comentariosSrv.listarPorAlojamiento(alojamientoId, 0, 20)
+    .pipe(take(1))
+    .subscribe(resp => {
+      const items =
+        resp.contenido ??
+        resp.content ??
+        resp.items ??
+        resp.resultados ??
+        [];
 
-          // Actualizar contador y promedio “al vuelo”
-          const antes = this.aloj!.cantidadComentarios ?? 0;
-          const promedioAntes = this.aloj!.calificacionPromedio ?? 0;
+      const comentarios: ComentarioVM[] = items.map((c: any) => ({
+        id: c.id ?? c.comentarioId ?? 0,
+        autor: c.autorNombre ?? c.usuarioNombre ?? 'Usuario',
+        avatarUrl: c.autorFotoUrl ?? c.usuarioFotoUrl ?? null,
+        calificacion: Number(c.calificacion ?? 0),
+        texto: c.comentarioTexto ?? c.comentario ?? '',
+        fecha: c.fechaComentario ?? c.fechaCreacion ?? c.fecha ?? null
+      }));
 
-          const sumaAntes = promedioAntes * antes;
-          const ahoraCantidad = antes + 1;
-          const ahoraPromedio = (sumaAntes + this.nuevaCalificacion) / ahoraCantidad;
+      if (!this.aloj) return;
 
-          this.aloj!.cantidadComentarios = ahoraCantidad;
-          this.aloj!.calificacionPromedio = ahoraPromedio;
-
-          // reset form
-          this.nuevaCalificacion = 0;
-          this.nuevoComentario = '';
-        },
-        error: (e) => {
-          this.enviandoComentario = false;
-          this.errorComentario =
-            e?.error?.message ||
-            'No se pudo enviar tu reseña. Verifica que tengas una reserva completada para este alojamiento.';
-        }
-      });
+      this.aloj = {
+        ...this.aloj,
+        comentarios,
+        cantidadComentarios:
+          resp.totalElementos ?? resp.total ?? comentarios.length
+      };
     });
-  }
+}
+
 
 
   trackByIndex(i: number): number { return i; }
@@ -353,7 +332,7 @@ reservarAhora(): void {
       fechaCheckin:  this.toYYYYMMDD(this.checkin),
       fechaCheckout: this.toYYYYMMDD(this.checkout),
       numeroHuespedes: this.huespedes ?? 1,
-      metodoPago: 'TARJETA_CREDITO' // opcional, cambia si tienes selector
+      metodoPago: 'TARJETA_CREDITO' 
     };
 
     this.reservasSrv.crearReserva(payload).pipe(take(1)).subscribe({
