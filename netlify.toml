@@ -1,6 +1,6 @@
 [build]
-command = "rm -rf dist && npm ci --legacy-peer-deps && npm run build && ls -la dist/"
-publish = "dist/alojapp"
+command = "npm run build"
+publish = "dist/alojapp/browser"
 
 [[redirects]]
 from = "/*"
