@@ -1,6 +1,6 @@
 [build]
-command = "npm run build"
-publish = "dist"    # ← SOLO "dist", sin "alojapp"
+command = "ng build --configuration=production"
+publish = "dist"
 
 [[redirects]]
 from = "/*"
