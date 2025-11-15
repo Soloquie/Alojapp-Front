@@ -25,6 +25,7 @@
           "builder": "@angular/build:application",
           "options": {
             "browser": "src/main.ts",
+            "outputPath": "dist/alojapp",
             "polyfills": [
               "zone.js"
             ],
