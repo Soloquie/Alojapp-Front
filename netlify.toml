@@ -1,0 +1,8 @@
+[build]
+command = "npm install --legacy-peer-deps && npx ng build --output-path=dist/alojapp"
+publish = "dist/alojapp"
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
